@@ -1,0 +1,82 @@
+{
+  "name": "@awamstock/model",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "clean": "rimraf -rf ./dist",
+    "copy": "ts-node scripts/copy.ts",
+    "dev": "pnpm run copy && tsc -w -p tsconfig.build.json",
+    "dev:esm": "pnpm run copy && tsc -w -p tsconfig.build.esm.json",
+    "build": "pnpm run clean && pnpm run copy && pnpm run compile",
+    "compile": "tsc -p tsconfig.build.json && tsc -p tsconfig.build.esm.json",
+    "lint": "eslint src/**/*.ts",
+    "prepublishOnly": "pnpm run build",
+    "add:model": "ts-node ./scripts/template/model-add.ts"
+  },
+  "files": [
+    "dist/",
+    "src/",
+    "package.json"
+  ],
+  "main": "dist/index.js",
+  "module": "dist/esm/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "default": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./types": {
+      "import": "./dist/esm/types/index.js",
+      "default": "./dist/types/index.js",
+      "types": "./dist/types/index.d.ts"
+    },
+    "./models": {
+      "import": "./dist/esm/models/index.js",
+      "default": "./dist/models/index.js",
+      "types": "./dist/models/index.d.ts"
+    },
+    "./querys": {
+      "import": "./dist/esm/querys/index.js",
+      "default": "./dist/querys/index.js",
+      "types": "./dist/querys/index.d.ts"
+    },
+    "./mongoose": {
+      "import": "./dist/esm/mongoose.js",
+      "default": "./dist/mongoose.js",
+      "types": "./dist/mongoose.d.ts"
+    },
+    "./src/*": "./src/*",
+    "./dist/*": "./dist/*",
+    "./package.json": "./package.json"
+  },
+  "types": "dist/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "types": [
+        "dist/types/index.d.ts"
+      ],
+      "models": [
+        "dist/models/index.d.ts"
+      ],
+      "querys": [
+        "dist/querys/index.d.ts"
+      ],
+      "mongoose": [
+        "dist/mongoose.d.ts"
+      ]
+    }
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@awamstock/shared": "workspace:^1.0.0",
+    "i18n": "^0.15.0",
+    "lodash": "^4.17.21"
+  },
+  "devDependencies": {
+    "@types/i18n": "^0.13.3"
+  }
+}

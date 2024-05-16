@@ -1,0 +1,19 @@
+{
+  "symbol": "股票代码",
+  "name": "股票名称",
+  "c": "现价",
+  "r": "涨跌幅",
+  "date": "日期",
+  "departmentTrade": {
+    "department": "营业部名称",
+    "d_type": "营业部类型",
+    "d_sort": "营业部排序",
+    "buy": "买入金额",
+    "buy_rate": "买入占比",
+    "sell": "卖出金额",
+    "sell_rate": "卖出占比",
+    "net": "净额",
+    "desc": "买卖方向",
+    "reason": "上榜原因"
+  }
+}

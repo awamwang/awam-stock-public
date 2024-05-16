@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "target": "es2017",
+    "incremental": true,
+    // "strictNullChecks": false,
+    // "noImplicitAny": false,
+    // "strictBindCallApply": false,
+    // "forceConsistentCasingInFileNames": false,
+    // "noFallthroughCasesInSwitch": false,
+    "baseUrl": "./",
+    // "rootDir": "." ,
+    "outDir": "./dist"
+  }
+}

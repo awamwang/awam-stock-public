@@ -1,0 +1,33 @@
+{
+  "extends": "../../tsconfig.json",
+  // "include": ["src/**/*.ts", "src/**/*.vue", "typings/**/*.ts"],
+  "exclude": ["node_modules", "dist"],
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "baseUrl": "./",
+    "outDir": "./dist",
+    "moduleResolution": "node",
+    "importHelpers": true,
+    "jsx": "preserve",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "inlineSourceMap": false,
+    "sourceMap": true,
+    "lib": ["dom", "es5"],
+    "typeRoots": ["./typings"],
+    "types": ["vue", "element-plus/global"],
+    "paths": {
+      "@/*": ["src/*"],
+      "@C/*": ["src/components/*"],
+      "@V/*": ["src/views/*"],
+      "@U/*": ["src/utils/*"]
+    },
+    "strict": true,
+    "allowSyntheticDefaultImports": true,
+    "isolatedModules": true,
+    "emitDecoratorMetadata": false,
+    "skipLibCheck": true
+  },
+  "references": [{ "path": "./tsconfig.node.json" }]
+}

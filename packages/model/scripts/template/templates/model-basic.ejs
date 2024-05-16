@@ -1,0 +1,22 @@
+import { ModelFactory } from '../util'
+import { IDocument } from './BaseModel'
+
+const data = {
+
+}
+
+export type I<%= name %> = IDocument<typeof data>
+
+export const {
+  fullConfig: <%= lowerName %>Config,
+  map: <%= lowerName %>Map,
+  strNameMap: <%= lowerName %>StrNameMap,
+  schemaGetter: <%= lowerName %>SchemaGetter,
+  oriDataKeys: <%= lowerName %>OriDataKeys,
+  modelGetter: <%= lowerName %>Getter,
+  schema: <%= name %>Schema,
+  model: <%= name %>,
+} = new ModelFactory<I<%= name %>>('<%= lowerName %>', data, {
+})
+
+export default <%= lowerName %>Getter

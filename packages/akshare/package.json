@@ -1,0 +1,15 @@
+{
+  "name": "akshare",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "python main.py --port 8988",
+    "start": "python main.py --host 0.0.0.0 --port 8988",
+    "pm2:start": "pip install -r requirements.txt && pm2 reload ecosystem.config.js --only stock-akshare"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

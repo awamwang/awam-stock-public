@@ -1,0 +1,13 @@
+import { Module } from '@nestjs/common'
+import { MongooseModule } from '@nestjs/mongoose'
+
+import { <%= upperFirstCamelCaseName %>Schema } from '@awamstock/model'
+import { <%= upperFirstCamelCaseName %>Service } from './<%= kebabCaseName %>.service'
+import { <%= upperFirstCamelCaseName %>Controller } from './<%= kebabCaseName %>.controller'
+
+@Module({
+  imports: [MongooseModule.forFeature([{ name: '<%= upperFirstCamelCaseName %>', schema: <%= upperFirstCamelCaseName %>Schema }])],
+  providers: [<%= upperFirstCamelCaseName %>Service],
+  controllers: [<%= upperFirstCamelCaseName %>Controller],
+})
+export class <%= upperFirstCamelCaseName %>Module {}

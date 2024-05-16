@@ -1,0 +1,12 @@
+import { Controller } from '@nestjs/common'
+import { InjectModel } from '@nestjs/mongoose'
+
+import { BasicController } from '../../lib/contoller'
+import { I<%= upperFirstCamelCaseName %>, <%= lowerFirstCamelCaseName %>StrNameMap } from '@awamstock/model'
+
+@Controller('<%= kebabCaseName %>s')
+export class <%= upperFirstCamelCaseName %>Controller extends BasicController<I<%= upperFirstCamelCaseName %>> {
+  constructor(@InjectModel('<%= upperFirstCamelCaseName %>') private myModel) {
+    super(myModel, { strNameMap: <%= lowerFirstCamelCaseName %>StrNameMap, supportedListQuery: ['date'], supportedGetParam: ['_id', 'date'] })
+  }
+}

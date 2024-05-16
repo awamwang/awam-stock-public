@@ -1,0 +1,58 @@
+{
+  "id": "3587377",
+  "name": "awamstock",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon-",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "10329666",
+      "name": "up-down-arrows",
+      "font_class": "short-trade",
+      "unicode": "e629",
+      "unicode_decimal": 58921
+    },
+    {
+      "icon_id": "11232093",
+      "name": "down",
+      "font_class": "down",
+      "unicode": "e7cd",
+      "unicode_decimal": 59341
+    },
+    {
+      "icon_id": "11760909",
+      "name": "double-down",
+      "font_class": "double-down",
+      "unicode": "e611",
+      "unicode_decimal": 58897
+    },
+    {
+      "icon_id": "14930474",
+      "name": "Down向下 (30)",
+      "font_class": "zaipan",
+      "unicode": "e726",
+      "unicode_decimal": 59174
+    },
+    {
+      "icon_id": "22227218",
+      "name": "金牌",
+      "font_class": "first",
+      "unicode": "e617",
+      "unicode_decimal": 58903
+    },
+    {
+      "icon_id": "22227219",
+      "name": "银牌",
+      "font_class": "second",
+      "unicode": "e618",
+      "unicode_decimal": 58904
+    },
+    {
+      "icon_id": "22227225",
+      "name": "铜牌",
+      "font_class": "third",
+      "unicode": "e619",
+      "unicode_decimal": 58905
+    }
+  ]
+}

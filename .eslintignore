@@ -1,0 +1,7 @@
+flow
+dist
+node_modules
+coverage
+
+/packages/server/**/*.d.ts
+/packages/server/**/*.d.ts.map

@@ -1,0 +1,41 @@
+{
+  "editor.codeActionsOnSave": false,
+  "prettier.eslintIntegration": true,
+  "prettier.parser": "typescript",
+  "prettier.tslintIntegration": true,
+  "eslint.debug": true,
+  // "eslint.format.enable": true,
+  //   "eslint.validate": [
+  //   "javascript",
+  //   "javascriptreact",
+  //   "typescript",
+  //   "typescriptreact"
+  // ],
+  // Use the project's typescript version
+  "typescript.tsdk": "node_modules/typescript/lib",
+
+  "cSpell.enabledLanguageIds": ["markdown", "plaintext", "text", "yml"],
+
+  "[vue]": {
+    "editor.tabSize": 2,
+    // "editor.defaultFormatter": "svipas.prettier-plus"
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+  "[json]": {
+    "editor.tabSize": 2,
+    // "editor.defaultFormatter": "svipas.prettier-plus"
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[jsonc]": {
+    // "editor.defaultFormatter": "svipas.prettier-plus"
+    "editor.defaultFormatter": "rvest.vs-code-prettier-eslint"
+  },
+  //   "[typescript]": {
+  //   "editor.tabSize": 2,
+  //   "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  // },
+  // "[javascript]": {
+  //   "editor.tabSize": 2,
+  //   "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  // }
+}
