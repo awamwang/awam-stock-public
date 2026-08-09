@@ -5,7 +5,15 @@
   "testRegex": "availability/.*\\.availability-spec\\.ts$",
   "setupFiles": ["<rootDir>/availability/setup-env.ts"],
   "transform": {
-    "^.+\\.ts$": "ts-jest"
+    "^.+\\.ts$": [
+      "ts-jest",
+      {
+        "tsconfig": {
+          "esModuleInterop": true,
+          "allowSyntheticDefaultImports": true
+        }
+      }
+    ]
   },
   "transformIgnorePatterns": ["/node_modules/"],
   "testTimeout": 60000

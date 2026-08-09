@@ -13,7 +13,8 @@
     "test": "pnpm run test:availability",
     "test:availability": "pnpm --filter @awamstock/server test:availability",
     "test:availability:api": "pnpm --filter @awamstock/server test:availability:api",
-    "test:availability:files": "pnpm --filter @awamstock/server test:availability:files"
+    "test:availability:files": "pnpm --filter @awamstock/server test:availability:files",
+    "test:availability:server": "pnpm --filter @awamstock/server test:availability:server"
   },
   "lint-staged": {
     "*.js": [
