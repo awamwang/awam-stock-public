@@ -4,6 +4,7 @@ export * from './wencai'
 export * from './tushare'
 
 export * from './fs'
+export * from './path-guard'
 export * from './file/excel'
 export * from './file/ini'
 

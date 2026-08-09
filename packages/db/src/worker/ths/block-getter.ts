@@ -1,5 +1,5 @@
 import path from 'node:path'
-import { _, files as FILES, readIni, timer } from '@awamstock/shared'
+import { _, files as FILES, readIni, timer, ensureThsDirAvailable } from '@awamstock/shared'
 import { IBlock, Block, BlockType } from '@awamstock/model'
 
 import { BatchWorker } from '../../worker/worker'
@@ -63,6 +63,10 @@ export default class ThsBlockWorker extends BatchWorker {
 
   async batch(params?: Record<string, any>) {
     try {
+      if (!ensureThsDirAvailable('更新同花顺板块')) {
+        return
+      }
+
       const date = timer.today()
       // const date = '20230331'
 

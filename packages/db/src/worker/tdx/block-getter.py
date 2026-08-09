@@ -70,6 +70,13 @@ def main():
     # 删除所以from tdx的记录
     # db['block'].delete_many({'from': 'tdx'})
 
+    if not os.path.isdir(TDX_DIR):
+        print('[py][skip] 更新tdx-block：通达信目录不存在或不可访问: %s' % TDX_DIR)
+        return
+    if not os.path.isdir(TDX_HQ_DIR):
+        print('[py][skip] 更新tdx-block：行情缓存目录不存在或不可访问: %s' % TDX_HQ_DIR)
+        return
+
     try:
         # 遍历zs,gn,fg
         for block_type in ['zs', 'gn', 'fg']:

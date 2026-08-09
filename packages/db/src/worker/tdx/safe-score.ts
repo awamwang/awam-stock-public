@@ -1,7 +1,7 @@
 /**
  * 安全分
  */
-import { readExcelJson, files as FILES, mapObj, timer } from '@awamstock/shared'
+import { readExcelJson, files as FILES, mapObj, timer, ensureFileDirAvailable, skipIfPathInvalid } from '@awamstock/shared'
 import { SafeScore, safeScoreMap } from '@awamstock/model'
 import { BatchWorker } from '../../worker/worker'
 import { 每日复盘 } from '../../config/worker'
@@ -15,6 +15,13 @@ export default class SafeScoreWorker extends BatchWorker {
 
   async batch(params?: Record<string, any>) {
     try {
+      if (!ensureFileDirAvailable('更新安全分排行')) {
+        return
+      }
+      if (skipIfPathInvalid(FILES.safeScoreTdx, 'file', '更新安全分排行')) {
+        return
+      }
+
       const date = timer.today()
       const createdAt = new Date()
       let data = await readExcelJson(FILES.safeScoreTdx, '安全分排行', 'gbk')

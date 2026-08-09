@@ -8,14 +8,21 @@ import fs from 'fs-extra'
 import nfs from 'node:fs'
 import dayjs from 'dayjs'
 
-import { files as FILES, parseThsWencaiTable, DATE_FORMAT } from '@awamstock/shared'
+import { files as FILES, parseThsWencaiTable, DATE_FORMAT, ensureFileDirAvailable, skipIfPathInvalid } from '@awamstock/shared'
 import { DepartmentTrade, departmentTradeMap } from '@awamstock/model'
 import { BatchWorker } from '../worker'
 import { beforeStart } from '../wrapper'
 import { ignoreDbError } from '../../db'
 import { handleWorkerError } from '../exception'
 
-async function getRawHtmlList(date?: string): Promise<string[]> {
+async function getRawHtmlList(date?: string): Promise<string[] | null> {
+  if (!ensureFileDirAvailable('更新营业部龙虎榜')) {
+    return null
+  }
+  if (skipIfPathInvalid(FILES.departmentTradeInput, 'file', '更新营业部龙虎榜')) {
+    return null
+  }
+
   const stat = nfs.statSync(FILES.departmentTradeInput)
   if (dayjs(stat.mtime).format(DATE_FORMAT) !== dayjs(date).format(DATE_FORMAT)) {
     throw new Error('[worker] 营业部龙虎榜输入文件不存在')
@@ -39,6 +46,9 @@ function parseTableData(html: string) {
 
 async function departmentTrade(date?: string) {
   const htmlList = await getRawHtmlList(date)
+  if (!htmlList) {
+    return
+  }
 
   return await Promise.all(
     htmlList.map(async (html) => {
@@ -63,8 +73,10 @@ export default class DepartmentTradeWorker extends BatchWorker {
   async batch(params: Record<string, any>) {
     const { date } = params
 
-    await departmentTrade(date).catch(handleWorkerError)
-    console.log(`[worker] 营业部龙虎榜保存完成${date ? '-' + date : ''}`)
+    const result = await departmentTrade(date).catch(handleWorkerError)
+    if (result) {
+      console.log(`[worker] 营业部龙虎榜保存完成${date ? '-' + date : ''}`)
+    }
   }
 }
 

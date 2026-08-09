@@ -1,4 +1,5 @@
 import { config as envConfig } from 'dotenv'
+import { checkPath, isExistingDir } from '../util/path-guard'
 
 export const EnvDir = 'envs'
 export type EnvMode = 'development' | 'production' | 'test'
@@ -92,14 +93,77 @@ export const api = {
 /**
  * file配置
  */
-const FILE_DIR = process.env.AWST_FILE_DIR || '/var/stock/files'
+const FILE_DIR_DEFAULT = '/var/stock/files'
+const FILE_DIR_ENV = process.env.AWST_FILE_DIR?.trim() || ''
+const TDX_DIR_ENV = process.env.AWST_TDX_DIR?.trim() || ''
+const THS_DIR_ENV = process.env.AWST_THS_DIR?.trim() || ''
+const FILE_DIR = FILE_DIR_ENV || FILE_DIR_DEFAULT
+
 export const files = {
-  tdxDir: `${process.env.AWST_TDX_DIR || 'C:\\Program Files\\通达信'}`,
-  thsDir: `${process.env.AWST_THS_DIR || 'C:\\同花顺软件\\同花顺'}`,
+  fileDir: FILE_DIR,
+  /** 是否显式配置了 AWST_FILE_DIR */
+  fileDirConfigured: Boolean(FILE_DIR_ENV),
+  tdxDir: TDX_DIR_ENV || 'C:\\Program Files\\通达信',
+  /** 是否显式配置了 AWST_TDX_DIR */
+  tdxDirConfigured: Boolean(TDX_DIR_ENV),
+  thsDir: THS_DIR_ENV || 'C:\\同花顺软件\\同花顺',
+  /** 是否显式配置了 AWST_THS_DIR */
+  thsDirConfigured: Boolean(THS_DIR_ENV),
   riskyLonghu: `${FILE_DIR}/ths/龙虎危险.txt`,
   departmentTradeInput: `${FILE_DIR}/ths/wencai/营业部龙虎榜.txt`,
   departmentTrade: `${FILE_DIR}/营业部龙虎榜.txt`,
   safeScoreTdx: `${FILE_DIR}/tdx/安全分排行.xls`,
+}
+
+/** 共享文件目录是否有效（未配置时使用默认路径再检测） */
+export function isFileDirAvailable(): boolean {
+  return isExistingDir(files.fileDir)
+}
+
+/** 通达信安装目录是否有效 */
+export function isTdxDirAvailable(): boolean {
+  return isExistingDir(files.tdxDir)
+}
+
+/** 同花顺安装目录是否有效 */
+export function isThsDirAvailable(): boolean {
+  return isExistingDir(files.thsDir)
+}
+
+function skipDirHint(configured: boolean, envName: string): string {
+  return configured ? '' : `（未配置 ${envName}，已使用默认路径）`
+}
+
+/**
+ * 文件目录相关能力是否可用；不可用时打印跳过原因并返回 false
+ */
+export function ensureFileDirAvailable(label: string): boolean {
+  const result = checkPath(files.fileDir, 'dir')
+  if (!result.ok) {
+    console.warn(`[skip] ${label}：${result.reason}${skipDirHint(files.fileDirConfigured, 'AWST_FILE_DIR')}`)
+    return false
+  }
+  return true
+}
+
+/** 通达信目录相关能力是否可用 */
+export function ensureTdxDirAvailable(label: string): boolean {
+  const result = checkPath(files.tdxDir, 'dir')
+  if (!result.ok) {
+    console.warn(`[skip] ${label}：${result.reason}${skipDirHint(files.tdxDirConfigured, 'AWST_TDX_DIR')}`)
+    return false
+  }
+  return true
+}
+
+/** 同花顺目录相关能力是否可用 */
+export function ensureThsDirAvailable(label: string): boolean {
+  const result = checkPath(files.thsDir, 'dir')
+  if (!result.ok) {
+    console.warn(`[skip] ${label}：${result.reason}${skipDirHint(files.thsDirConfigured, 'AWST_THS_DIR')}`)
+    return false
+  }
+  return true
 }
 
 /**

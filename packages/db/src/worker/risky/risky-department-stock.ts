@@ -6,7 +6,7 @@
 import _ from 'lodash'
 import dayjs from 'dayjs'
 
-import { files as FILES, symbolToCode, stockToCsv, writeFile, DATE_FORMAT } from '@awamstock/shared'
+import { files as FILES, symbolToCode, stockToCsv, writeFile, DATE_FORMAT, ensureFileDirAvailable, skipIfPathInvalid } from '@awamstock/shared'
 import { IDepartmentTrade, IFocusedDepartment, RiskyLonghu } from '@awamstock/model'
 import { BatchWorker } from '../worker'
 import { beforeStart } from '../wrapper'
@@ -89,6 +89,12 @@ function handleTrades(trades: IDepartmentTrade[]) {
 }
 
 async function saveToFile(stocks: any) {
+  if (!ensureFileDirAvailable('导出龙虎危险文件')) {
+    return
+  }
+  if (skipIfPathInvalid(FILES.riskyLonghu, 'writable-file', '导出龙虎危险文件')) {
+    return
+  }
   const data = stocks.map(stockToCsv).join('\n')
   await writeFile(FILES.riskyLonghu, data, 'gbk')
   // return save('\\\\AWAM-PC2\\Stock\\files\\ths\\龙虎危险.txt', data)
