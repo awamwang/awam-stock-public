@@ -19,6 +19,7 @@ import messageMixin from '@/mixins/message'
 import socketDataMixin from '@/mixins/socketData'
 import globalStockDataMixin from '@/mixins/globalStockData'
 import useSetStockCode from '@/composables/useSetStockCode'
+import useThsLinker from '@/composables/useThsLinker'
 
 export default {
   mixins: [messageMixin, socketDataMixin, globalStockDataMixin],
@@ -28,6 +29,7 @@ export default {
       global: useGlobalStore(),
       environment: useEnvironmentStore(),
       setStockCode: useSetStockCode(),
+      thsLinker: useThsLinker(),
     }
   },
   computed: {
@@ -55,12 +57,20 @@ export default {
         useNotify().notify('股票监听断开', { duration: 10 })
       }
     },
+    'global.linkMode'() {
+      this.thsLinker.syncByMode()
+    },
+    'global.thsLinkerWsUrl'() {
+      if (this.global.linkMode === 'thsLinker') {
+        this.thsLinker.disconnect()
+        this.thsLinker.connect()
+      }
+    },
   },
   mounted() {
-    setTimeout(() => {
-      if (!this.global.stockCode) {
-        this.global.loadStorage()
-      }
+    setTimeout(async () => {
+      await this.global.loadStorage()
+      this.thsLinker.syncByMode()
     }, 100)
   },
 }

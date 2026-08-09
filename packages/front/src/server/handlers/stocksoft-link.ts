@@ -15,6 +15,9 @@ export interface IStocksoftWindow {
   hwnd?: string
   name?: string
   code?: string
+  /** ths-linker 实例 id（pid 字符串） */
+  id?: string
+  ths_dir?: string
 }
 
 async function requestGbkText(url: string) {

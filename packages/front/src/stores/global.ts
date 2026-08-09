@@ -14,10 +14,13 @@ import {
   IBlockDay,
 } from '@awamstock/model'
 import { IStocksoftWindow, setLinkSoftUrl, setOne, setAll, list as getStocksofts } from '@/apis/stocksoft'
+import { DEFAULT_THS_LINKER_WS_URL, LinkMode, thsLinkerClient } from '@/composables/thsLinkerClient'
 
 export interface IGlobalStore {
   stockCode: string
+  linkMode: LinkMode
   linkSoftIp: string
+  thsLinkerWsUrl: string
   stocksofts: IStocksoftWindow[]
   linkedStocksofts: IStocksoftWindow[]
   focusedDepartments: IFocusedDepartment[]
@@ -39,10 +42,16 @@ export interface IGlobalStore {
   }
 }
 
+function normalizeLinkMode(mode: string | null): LinkMode {
+  return mode === 'thsLinker' ? 'thsLinker' : 'stocksoftLink'
+}
+
 export const useGlobalStore = defineStore('global', {
   state: (): IGlobalStore => ({
     stockCode: '',
+    linkMode: 'stocksoftLink',
     linkSoftIp: '',
+    thsLinkerWsUrl: DEFAULT_THS_LINKER_WS_URL,
     stocksofts: [],
     linkedStocksofts: [],
     focusedDepartments: [],
@@ -82,6 +91,21 @@ export const useGlobalStore = defineStore('global', {
       }
     },
 
+    setLinkMode(mode: LinkMode) {
+      const next = normalizeLinkMode(mode)
+      if (this.linkMode === next) return
+      this.linkMode = next
+      localStorage.setItem('linkMode', this.linkMode)
+    },
+
+    setThsLinkerWsUrl(url: string) {
+      const next = url?.trim() || DEFAULT_THS_LINKER_WS_URL
+      if (this.thsLinkerWsUrl === next) return
+      this.thsLinkerWsUrl = next
+      localStorage.setItem('thsLinkerWsUrl', this.thsLinkerWsUrl)
+      thsLinkerClient.setUrl(this.thsLinkerWsUrl)
+    },
+
     async setLinkSoftIp(ip: string) {
       if (ip && this.linkSoftIp !== ip) {
         await setLinkSoftUrl((this.linkSoftIp = ip))
@@ -101,11 +125,20 @@ export const useGlobalStore = defineStore('global', {
       }
     },
     async emitStockCode(code: string) {
+      if (this.linkMode === 'thsLinker') {
+        thsLinkerClient.jump(code, 'all')
+        return
+      }
       await setAll({
         code: code,
       })
     },
     async emitStockCodeToOne(soft: IStocksoftWindow, code: string) {
+      if (this.linkMode === 'thsLinker') {
+        const target = soft.id || 'all'
+        thsLinkerClient.jump(code, target)
+        return
+      }
       if (soft.hwnd) {
         await setOne({
           hwnd: soft.hwnd,
@@ -114,6 +147,16 @@ export const useGlobalStore = defineStore('global', {
       }
     },
     async emitStockCodeToOneLinked(code: string) {
+      if (this.linkMode === 'thsLinker') {
+        if (!this.linkedStocksofts?.length) {
+          thsLinkerClient.jump(code, 'all')
+          return
+        }
+        this.linkedStocksofts.forEach((s) => {
+          this.emitStockCodeToOne(s, code)
+        })
+        return
+      }
       this.linkedStocksofts.forEach((s) => {
         this.emitStockCodeToOne(s, code)
       })
@@ -121,10 +164,15 @@ export const useGlobalStore = defineStore('global', {
 
     async loadStorage() {
       this.stockCode = localStorage.getItem('stockCode') || ''
+      this.linkMode = normalizeLinkMode(localStorage.getItem('linkMode'))
+      this.thsLinkerWsUrl = localStorage.getItem('thsLinkerWsUrl') || DEFAULT_THS_LINKER_WS_URL
+      thsLinkerClient.setUrl(this.thsLinkerWsUrl)
 
       this.setLinkSoftIp(localStorage.getItem('linkSoftIp') || '')
       this.linkedStocksofts = JSON.parse(localStorage.getItem('linkedStocksofts') || '[]')
-      this.setStocksofts(await getStocksofts())
+      if (this.linkMode === 'stocksoftLink') {
+        this.setStocksofts(await getStocksofts())
+      }
       // this.stocksofts = JSON.parse(localStorage.getItem('stocksofts') || '[]')
     },
 
