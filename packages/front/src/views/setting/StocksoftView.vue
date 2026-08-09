@@ -59,9 +59,7 @@ async function toggleLinkedSelection() {
   await nextTick()
 
   if (global.linkedStocksofts) {
-    const selectedRows = stocksoftList.value.filter((soft) =>
-      global.linkedStocksofts.some((linked) => isSameSoft(soft, linked))
-    )
+    const selectedRows = stocksoftList.value.filter((soft) => global.linkedStocksofts.some((linked) => isSameSoft(soft, linked)))
 
     if (selectedRows?.length) {
       selectedRows.forEach((row) => {

@@ -25,7 +25,7 @@ export default function useGraph(options: GraphOptions): { uuid: Ref<string>; g2
     if (!data || _.isEmpty(data) || !chart.value) return
 
     // chart.value.data(data)
-    _.isFunction(onRender) && onRender(chart.value)
+    if (_.isFunction(onRender)) onRender(chart.value)
     chart.value.render()
   }
 
@@ -37,7 +37,7 @@ export default function useGraph(options: GraphOptions): { uuid: Ref<string>; g2
       ..._.omit(options, ['data', 'onInit', 'onRender']),
     })
 
-    _.isFunction(onInit) && onInit(chart.value)
+    if (_.isFunction(onInit)) onInit(chart.value)
     render()
   }
 

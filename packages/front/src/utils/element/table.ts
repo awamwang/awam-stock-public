@@ -24,15 +24,15 @@ export const formatStockPoolRowTime = function (row: IStockPool, column: TableCo
     return row.type === 'dt'
       ? getNormalizeTimePartFromMillisecond(row.first_limit_down)
       : row.type === 'zt_zr'
-      ? getNormalizeTimePartFromMillisecond(row.yesterday_first_limit_up)
-      : getNormalizeTimePartFromMillisecond(cellValue)
+        ? getNormalizeTimePartFromMillisecond(row.yesterday_first_limit_up)
+        : getNormalizeTimePartFromMillisecond(cellValue)
   }
   if (column.property === 'last_limit_up') {
     return row.type === 'dt'
       ? getNormalizeTimePartFromMillisecond(row.last_limit_down)
       : row.type === 'zt_zr'
-      ? getNormalizeTimePartFromMillisecond(row.yesterday_last_limit_up)
-      : getNormalizeTimePartFromMillisecond(cellValue)
+        ? getNormalizeTimePartFromMillisecond(row.yesterday_last_limit_up)
+        : getNormalizeTimePartFromMillisecond(cellValue)
   }
 
   return getNormalizeTimePartFromMillisecond(cellValue)
