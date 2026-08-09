@@ -30,23 +30,26 @@ export async function getBaoerEnvironment() {
   return mapObj(res.data[res.data.length - 1], environmentMap, { saveExtra: false })
 }
 
-// 统计
-// {{LongTouurl}}?a=ZhangFuDetail&apiv=${API_PREFIX}&c=HomeDingPan&PhoneOSNew=1&
+// 统计（选股宝市场温度；api.xuangubao.cn 已 404，统一走 flash-api）
 export class 大盘 extends DataWorker<IEnvironment> {
   protected model = Environment
 
   async get() {
     const res = await myFetch(
-      `${baseUrl.baoer}/${API_PREFIX}/market_indicator/line?fields=market_temperature,limit_up_broken_count,limit_up_broken_ratio,yesterday_limit_up_avg_pcp,rise_count,fall_count`,
+      `${baseUrl.baoerFlash}/${API_PREFIX}/market_indicator/line?fields=market_temperature,limit_up_broken_count,limit_up_broken_ratio,yesterday_limit_up_avg_pcp,rise_count,fall_count`,
       {
         headers: BaoerHeaders,
       }
     )
+    const latest = ensureArray(res?.data).at(-1)
+    if (!latest) {
+      throw new Error('选股宝 market_indicator 未返回 data')
+    }
 
     return mapObj<IEnvironment>(
       {
         date: timer.today(),
-        ...res.info,
+        ...latest,
       },
       environmentMap,
       { saveExtra: false }

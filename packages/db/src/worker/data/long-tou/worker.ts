@@ -346,9 +346,18 @@ export class 涨停信息 extends DataWorker {
 
   async get() {
     const data: any = await myFetch(`${baseUrl.LongTou}?a=ZhangTingExpression&apiv=${API_V}&c=HomeDingPan&PhoneOSNew=1&`)
+    const info = Array.isArray(data?.info) ? data.info : null
+    // 非交易时段接口可能返回 ["kaipanla.com", ...] 占位 list，避免写入无效数据
+    if (!info || info.length < 12 || typeof info[0] !== 'number') {
+      console.warn('[worker] 涨停信息：当前无有效 info（可能非交易时段）', {
+        errcode: data?.errcode,
+        keys: data ? Object.keys(data) : [],
+      })
+      return null as any
+    }
 
     return {
-      info: data.info,
+      info,
       date: timer.today(),
       createdAt: new Date(),
     }
@@ -400,20 +409,16 @@ export async function 盘面关注() {
   })
 }
 
-// GroupStock
+// GroupStock（股票新高分组）
 // {{LongTouurl}}?a=GroupStock&st=10&apiv=${API_V}&Type=0_0_0_0_0&c=StockNewHigh&PhoneOSNew=1&Index=0&
 export async function GroupStock() {
-  return await myFetch(`${baseUrl.LongTou}?a=GetPMSL_PMLD&st=30&apiv=${API_V}&c=FuPanLa&PhoneOSNew=1&Index=0&`).then((data) => {
-    throw new Error('未完成')
-  })
+  return await myFetch(`${baseUrl.LongTou}?a=GroupStock&st=10&apiv=${API_V}&Type=0_0_0_0_0&c=StockNewHigh&PhoneOSNew=1&Index=0&`)
 }
 
-// 板块异动
-// {{LongTouurl}}?a=apiv=${API_V}&st=10&apiv=${API_V}&c=DailyLimitResumption&PhoneOSNew=1&Index=0&
+// 板块异动（涨停原因板块）
+// {{LongTouurl}}?a=GetPlateInfo_w38&st=10&apiv=${API_V}&c=DailyLimitResumption&PhoneOSNew=1&Index=0&
 export async function 板块异动() {
-  return await myFetch(`${baseUrl.LongTou}?a=apiv=${API_V}&st=10&apiv=${API_V}&c=DailyLimitResumption&PhoneOSNew=1&Index=0&`).then((data) => {
-    throw new Error('未完成')
-  })
+  return await myFetch(`${baseUrl.LongTou}?a=GetPlateInfo_w38&st=10&apiv=${API_V}&c=DailyLimitResumption&PhoneOSNew=1&Index=0&`)
 }
 
 async function run() {

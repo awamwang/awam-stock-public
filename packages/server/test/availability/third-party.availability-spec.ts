@@ -187,21 +187,25 @@ describe('全量第三方接口可用性', () => {
       expect(pickField(data, 'list')).toBeDefined()
     })
 
-    it('GroupStock（股票新高，按注释目标 URL）→ GroupList/list', async () => {
+    it('GroupStock（股票新高）→ GroupList', async () => {
       const label = '开盘啦/GroupStock'
       const { data } = await probeJson(
         label,
         longTouUrl(`a=GroupStock&st=10&apiv=${LONG_TOU_APIV}&Type=0_0_0_0_0&c=StockNewHigh&PhoneOSNew=1&Index=0&`)
       )
-      const errcode = pickField(data, 'errcode')
-      if (errcode != null && String(errcode) !== '0') {
-        throw new Error(`[${label}] 开盘啦返回错误: errcode=${errcode}, errmsg=${pickField(data, 'errmsg') ?? ''}\nBody: ${truncateBody(JSON.stringify(data))}`)
-      }
-      const groupList = pickField(data, 'GroupList')
-      const list = pickField(data, 'list')
-      if (groupList == null && list == null) {
-        throw new Error(`[${label}] 缺少 GroupList 或 list\nBody: ${truncateBody(JSON.stringify(data))}`)
-      }
+      assertLongTouPayload(label, data, 'GroupList')
+      assertNonEmptyArray(label, data, 'GroupList')
+    })
+
+    it('GetPlateInfo_w38（板块异动/涨停原因板块）→ nums+list', async () => {
+      const label = '开盘啦/GetPlateInfo_w38'
+      const { data } = await probeJson(
+        label,
+        longTouUrl(`a=GetPlateInfo_w38&st=10&apiv=${LONG_TOU_APIV}&c=DailyLimitResumption&PhoneOSNew=1&Index=0&`)
+      )
+      assertLongTouPayload(label, data, 'list')
+      assertField(label, data, 'nums')
+      assertNonEmptyArray(label, data, 'list')
     })
   })
 
@@ -215,25 +219,18 @@ describe('全量第三方接口可用性', () => {
       assertNonEmptyArray(label, data, 'data')
     })
 
-    it('api market_indicator/line（大盘统计，worker 使用的非 flash 域名）', async () => {
-      const label = '选股宝/api/market_indicator'
+    it('flash market_indicator/line（大盘统计含涨跌家数）→ data', async () => {
+      const label = '选股宝/flash/market_indicator(含涨跌家数)'
       const url =
-        `${baseUrl.baoer}/api/market_indicator/line` +
+        `${baseUrl.baoerFlash}/api/market_indicator/line` +
         `?fields=market_temperature,limit_up_broken_count,limit_up_broken_ratio,yesterday_limit_up_avg_pcp,rise_count,fall_count`
-      try {
-        const { data } = await probeJson(label, url, { headers: baoerHeaders })
-        if (pickField(data, 'data') == null && pickField(data, 'info') == null) {
-          throw new Error(`[${label}] 缺少 data 或 info\nBody: ${truncateBody(JSON.stringify(data))}`)
-        }
-      } catch (err) {
-        const message = String((err as Error)?.message || err)
-        // 业务代码仍指向 api.xuangubao.cn，该路径当前可能 404；记录完整错误便于修复 worker
-        if (message.includes('HTTP 404')) {
-          console.warn(`[warn] ${label}: ${message}\n提示: packages/db 中 大盘 worker 仍调用此地址，可考虑改为 baoerFlash`)
-          return
-        }
-        throw err
-      }
+      const { data } = await probeJson(label, url, { headers: baoerHeaders })
+      const list = assertNonEmptyArray(label, data, 'data')
+      expect(list[list.length - 1]).toEqual(
+        expect.objectContaining({
+          market_temperature: expect.anything(),
+        })
+      )
     })
 
     it('pc/msgs（市场消息）→ NewMsgs', async () => {
