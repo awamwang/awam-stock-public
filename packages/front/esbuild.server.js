@@ -9,16 +9,18 @@ rmSync('public/server/', {
   force: true,
 })
 
-esbuild.build({
-  entryPoints: ['src/server/index.ts'],
-  outfile: 'public/server/index.js',
-  bundle: true,
-  minify: true,
-  platform: 'node',
-  sourcemap: true,
-  target: 'node16',
-  plugins: []
-}).catch((err) => {
+try {
+  esbuild.buildSync({
+    entryPoints: ['src/server/index.ts'],
+    outfile: 'public/server/index.js',
+    bundle: true,
+    minify: true,
+    platform: 'node',
+    sourcemap: true,
+    target: 'node16',
+    plugins: [],
+  })
+} catch (err) {
   console.log(err)
   process.exit(1)
-})
+}

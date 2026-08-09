@@ -1,2 +1,8 @@
 packages:
   - 'packages/*'
+
+packageExtensions:
+  hqchart:
+    dependencies:
+      babel-runtime: ^6.26.0
+      jquery: ^3.7.1

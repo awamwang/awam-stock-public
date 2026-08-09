@@ -141,6 +141,9 @@ importers:
 
   packages/front:
     dependencies:
+      dotenv:
+        specifier: 16.6.1
+        version: 16.6.1
       vue:
         specifier: ^3.5.22
         version: 3.5.41(typescript@5.9.3)

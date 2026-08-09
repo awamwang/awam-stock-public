@@ -15,6 +15,14 @@ export default function startHttpServer(io: Server) {
 
   app.use(router.routes()).use(router.allowedMethods())
 
-  app.listen(FRONT_SERVER_HTTP_PORT)
-  console.log('[background] http server listening on port', FRONT_SERVER_HTTP_PORT)
+  const server = app.listen(FRONT_SERVER_HTTP_PORT)
+  server.on('error', (err: NodeJS.ErrnoException) => {
+    console.error('[background] http server error:', err.message)
+    if (err.code === 'EADDRINUSE') {
+      process.exit(1)
+    }
+  })
+  server.on('listening', () => {
+    console.log('[background] http server listening on port', FRONT_SERVER_HTTP_PORT)
+  })
 }

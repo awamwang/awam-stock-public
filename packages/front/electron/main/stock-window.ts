@@ -34,13 +34,25 @@ export function loadPage(win: BrowserWindow, options: { url: string; hash?: stri
 }
 
 function createServer() {
-  server = utilityProcess.fork(join(ROOT_PATH.public, 'server/index.js'))
-  // server.stdout?.on('data', (data) => {
-  //   log.info(`Received chunk ${data}`)
-  // })
-  // server.stderr?.on('data', (data) => {
-  //   log.error(`Received chunk ${data}`)
-  // })
+  // 以 front 包根目录为 cwd，确保 dotenv 能加载 envs/.env*
+  const frontRoot = join(__dirname, '../../..')
+  server = utilityProcess.fork(join(ROOT_PATH.public, 'server/index.js'), [], {
+    cwd: frontRoot,
+    env: {
+      ...process.env,
+      NODE_ENV: process.env.NODE_ENV || 'development',
+    },
+    stdio: 'pipe',
+  })
+  server.stdout?.on('data', (data) => {
+    log.info(`[front-server] ${String(data).trimEnd()}`)
+  })
+  server.stderr?.on('data', (data) => {
+    log.error(`[front-server] ${String(data).trimEnd()}`)
+  })
+  server.on('exit', (code) => {
+    log.error(`[front-server] exited with code ${code}`)
+  })
 }
 
 export default async function createWindow() {

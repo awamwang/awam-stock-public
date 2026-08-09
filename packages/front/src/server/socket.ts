@@ -1,3 +1,4 @@
+import { createServer } from 'node:http'
 import { Server } from 'socket.io'
 
 import { FRONT_SERVER_SOCKET_PORT } from '@awamstock/shared/config'
@@ -5,7 +6,8 @@ import { handleSetCodeEvent } from './handlers/set-code'
 import { handleStocksoftLinkEvent } from './handlers/stocksoft-link'
 
 export default function startSocketServer(): Server {
-  const io = new Server({
+  const httpServer = createServer()
+  const io = new Server(httpServer, {
     cors: {
       // origin: 'http://localhost:8080',
       origin: '*',
@@ -26,8 +28,16 @@ export default function startSocketServer(): Server {
     })
   })
 
-  console.log('[background] socket server listening on port', FRONT_SERVER_SOCKET_PORT)
-  return io.listen(FRONT_SERVER_SOCKET_PORT)
+  httpServer.on('error', (err: NodeJS.ErrnoException) => {
+    console.error('[background] socket server error:', err.message)
+    if (err.code === 'EADDRINUSE') {
+      process.exit(1)
+    }
+  })
+  httpServer.listen(FRONT_SERVER_SOCKET_PORT, () => {
+    console.log('[background] socket server listening on port', FRONT_SERVER_SOCKET_PORT)
+  })
+  return io
 }
 
 if (process.argv && process.argv[1] && process.argv[1].includes('socket.ts')) {
