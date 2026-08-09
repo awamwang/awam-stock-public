@@ -10,6 +10,8 @@
     "preinstall": "npx only-allow pnpm",
     "lint": "eslint packages",
     "build:declarations": "tsc --declaration --emitDeclarationOnly",
+    "dev:db-server": "pnpm --parallel --filter @awamstock/db --filter @awamstock/server run dev",
+    "dev:web": "node ./scripts/dev-web.mjs",
     "test": "pnpm run test:availability",
     "test:availability": "pnpm --filter @awamstock/server test:availability",
     "test:availability:api": "pnpm --filter @awamstock/server test:availability:api",
