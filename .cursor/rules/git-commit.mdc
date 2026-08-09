@@ -1,0 +1,64 @@
+---
+description: Git 提交规范（Conventional Commits + 中文提交信息）
+alwaysApply: true
+---
+
+# Git 提交规范
+
+本项目遵循 [Conventional Commits](https://www.conventionalcommits.org/)，**提交说明必须使用中文**。
+
+## 格式
+
+```
+<type>(<scope>): <中文简述>
+
+[可选正文]
+
+[可选页脚]
+```
+
+- `type`：必填，见下表
+- `scope`：可选，说明影响范围（如 `front`、`server`、`db`）
+- 简述：必填，使用中文，不超过 72 字，不以句号结尾
+- 正文：可选，说明动机与实现要点，使用中文
+
+## type 类型
+
+| type | 含义 |
+|------|------|
+| feat | 新功能 |
+| fix | 缺陷修复 |
+| docs | 文档变更 |
+| style | 代码格式（不影响逻辑） |
+| refactor | 重构（非 feat/fix） |
+| perf | 性能优化 |
+| test | 测试相关 |
+| build | 构建或依赖变更 |
+| ci | CI 配置变更 |
+| chore | 杂项（工具、配置等） |
+| revert | 回滚提交 |
+
+## 示例
+
+```
+feat(front): 增加板块热度图表
+
+fix(server): 修复 socket 断线后未自动重连的问题
+
+docs: 补充本地开发环境说明
+
+chore: 调整 eslint 忽略规则
+```
+
+## Cursor / Agent 约束
+
+- 仅在用户明确要求创建提交时才执行 `git commit`
+- 提交信息必须符合上述格式，且简述/正文使用中文（可保留必要英文专有名词、代码标识）
+- 禁止纯英文提交信息（如 `fix: update login bug`）
+- 禁止含糊简述（如 `update`、`fix bug`、`临时提交`）
+- 使用 HEREDOC / 多行 `-m` 传递提交信息，确保格式完整
+- 不要用 `--no-verify` 跳过提交钩子，除非用户明确要求
+
+## Source Control「生成提交信息」
+
+左侧源代码管理里的 ✨ 生成提交信息**不会**读取 `.cursor/rules`，而是读取仓库根目录 `.cursorrules`。中文提交要求已写在该文件中。

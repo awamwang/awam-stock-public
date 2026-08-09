@@ -1,0 +1,6 @@
+# <type>(<scope>): <中文简述>
+#
+# 可选正文：说明动机与实现要点（中文）
+#
+# type: feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert
+# 示例: feat(front): 增加板块热度图表
