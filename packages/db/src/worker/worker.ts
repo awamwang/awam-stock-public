@@ -97,7 +97,7 @@ export class DataWorker<T extends IDataWorkerData = IDataWorkerData> implements 
   protected model?: mongoose.Model<T>
   protected collectionId: CollectionConfigKey | typeof NONE = NONE
   protected collection?: mongoose.Collection
-  protected socket?: MySocket
+  protected socket?: MySocket | null
   protected socketServer?: MySocketServer
   // 配置
   protected saveData = true

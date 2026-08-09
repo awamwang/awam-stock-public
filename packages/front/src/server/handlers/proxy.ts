@@ -7,7 +7,8 @@ export const serverHost = process.env.VITE_SERVER_IP || 'stock.awam.wang'
 export const serverPort = process.env.VITE_SERVER_PORT || 7001
 export const apiPrefix = process.env.VITE_API_PREFIX || '/api/v1'
 
-const ApiUrl = `https://${serverHost}:${serverPort}`
+const isLocalHost = serverHost === 'localhost' || serverHost === '127.0.0.1'
+const ApiUrl = `${isLocalHost ? 'http' : 'https'}://${serverHost}:${serverPort}`
 
 function isGetRequest(req: any) {
   return /^(GET|HEAD|OPTIONS|TRACE)$/.test(req.method)
@@ -49,7 +50,7 @@ const apiProxyMiddleware = koa2_connect(
     // cookieDomainRewrite: 'localhost',
     changeOrigin: true,
     ws: true,
-    secure: true,
+    secure: !isLocalHost,
     // logLevel: 'debug',
   })
 )
