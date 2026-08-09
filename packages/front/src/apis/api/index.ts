@@ -27,6 +27,7 @@ api.interceptors.response.use(
         throw new Error('Unauthorized')
       default:
         console.error(data)
+        return Promise.reject(data)
     }
   },
   (err) => {

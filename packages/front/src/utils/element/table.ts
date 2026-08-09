@@ -53,7 +53,7 @@ export const marketMessageBlocks = function (row: IMarketMessage) {
 /**
  * cell
  */
-export interface TableCellOptions<T> {
+export interface TableCellOptions<T extends Record<PropertyKey, any>> {
   row: T
   column: TableColumnCtx<T>
   rowIndex: number
