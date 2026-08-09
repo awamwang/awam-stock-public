@@ -10,6 +10,34 @@ const CONNECT_WAIT_MS = 10000
 export type MySocket = Socket
 let io: Promise<MySocket | null> | null = null
 
+/** 解析 socket.io connect_error，提取更具体的原因文案 */
+function 解析连接错误(err: Error): { 原因: string; 疑似服务未启动: boolean } {
+  const 细节: string[] = [err.message]
+  const anyErr = err as Error & { description?: unknown; context?: unknown; cause?: unknown }
+
+  for (const 字段 of [anyErr.description, anyErr.cause, anyErr.context]) {
+    if (字段 == null) continue
+    if (字段 instanceof Error) {
+      细节.push(字段.message)
+      if ('code' in 字段 && 字段.code) 细节.push(String(字段.code))
+    } else if (typeof 字段 === 'object' && 字段 !== null) {
+      const obj = 字段 as Record<string, unknown>
+      if (obj.message) 细节.push(String(obj.message))
+      if (obj.code) 细节.push(String(obj.code))
+      if (obj.status) 细节.push(String(obj.status))
+      if (obj.type) 细节.push(String(obj.type))
+    } else {
+      细节.push(String(字段))
+    }
+  }
+
+  const 合并 = 细节.filter(Boolean).join(' | ')
+  const 疑似服务未启动 =
+    /ECONNREFUSED|ENOTFOUND|EHOSTUNREACH|ETIMEDOUT|xhr poll error|websocket error|transport error/i.test(合并)
+
+  return { 原因: 合并, 疑似服务未启动 }
+}
+
 async function initSocketClient(): Promise<MySocket | null> {
   return new Promise((resolve) => {
     try {
@@ -22,6 +50,7 @@ async function initSocketClient(): Promise<MySocket | null> {
       })
 
       let settled = false
+      let 已提示启动服务端 = false
       const settle = (value: MySocket | null) => {
         if (settled) return
         settled = true
@@ -35,6 +64,7 @@ async function initSocketClient(): Promise<MySocket | null> {
 
       socket.on('connect', () => {
         clearTimeout(timer)
+        已提示启动服务端 = false
         console.log('[websocket client] connected to', socketUrl)
         settle(socket)
       })
@@ -45,7 +75,12 @@ async function initSocketClient(): Promise<MySocket | null> {
 
       socket.on('connect_error', (err) => {
         // 保持重连，超时后由 settle 放行调度，避免 server 未启动时卡住拉数
-        console.warn('[websocket client] connect error:', err.message)
+        const { 原因, 疑似服务未启动 } = 解析连接错误(err)
+        console.warn('[websocket client] connect error:', 原因)
+        if (疑似服务未启动 && !已提示启动服务端) {
+          已提示启动服务端 = true
+          console.warn(`[websocket client] 无法连接 ${socketUrl}，请先启动服务端: pnpm -F=server run dev`)
+        }
       })
 
       // console.log('[websocket client] connecting to', socketUrl)
