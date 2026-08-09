@@ -10,6 +10,8 @@ export interface IThsInstance {
   hwnd: number
   title: string
   ths_dir: string
+  listen?: boolean
+  send?: boolean
 }
 
 export interface IThsStockMessage {
@@ -27,19 +29,32 @@ export interface IThsInstancesMessage {
   stocks?: Record<string, { code: string; market_id?: string; symbol?: string }>
 }
 
+export interface IThsStockPayload {
+  code: string
+  ths_dir?: string
+  market_id?: string
+  symbol?: string
+  instances?: IThsInstance[]
+}
+
 type ThsMessage = IThsStockMessage | IThsInstancesMessage | { type: string; [key: string]: any }
 
-type StockHandler = (code: string) => void
-type InstancesHandler = (list: IStocksoftWindow[]) => void
+type StockHandler = (payload: IThsStockPayload) => void
+type InstancesHandler = (list: IStocksoftWindow[], stocks?: IThsInstancesMessage['stocks']) => void
+type ConnectedHandler = (connected: boolean) => void
 
 const RECONNECT_MS = 3000
 
-function mapInstances(instances: IThsInstance[] = []): IStocksoftWindow[] {
+function mapInstances(
+  instances: IThsInstance[] = [],
+  stocks?: IThsInstancesMessage['stocks']
+): IStocksoftWindow[] {
   return instances.map((item) => ({
     id: String(item.id),
     hwnd: String(item.hwnd),
     name: item.title,
     ths_dir: item.ths_dir,
+    code: stocks?.[item.ths_dir]?.code,
   }))
 }
 
@@ -50,6 +65,7 @@ class ThsLinkerClient {
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null
   private stockHandlers = new Set<StockHandler>()
   private instancesHandlers = new Set<InstancesHandler>()
+  private connectedHandlers = new Set<ConnectedHandler>()
   connected = false
 
   onStock(handler: StockHandler) {
@@ -60,6 +76,12 @@ class ThsLinkerClient {
   onInstances(handler: InstancesHandler) {
     this.instancesHandlers.add(handler)
     return () => this.instancesHandlers.delete(handler)
+  }
+
+  onConnected(handler: ConnectedHandler) {
+    this.connectedHandlers.add(handler)
+    handler(this.connected)
+    return () => this.connectedHandlers.delete(handler)
   }
 
   setUrl(url: string) {
@@ -86,7 +108,7 @@ class ThsLinkerClient {
       this.ws.close()
       this.ws = null
     }
-    this.connected = false
+    this.setConnected(false)
   }
 
   list() {
@@ -95,6 +117,12 @@ class ThsLinkerClient {
 
   jump(code: string, target: string = 'all') {
     this.send({ type: 'jump', code, target })
+  }
+
+  private setConnected(value: boolean) {
+    if (this.connected === value) return
+    this.connected = value
+    this.connectedHandlers.forEach((handler) => handler(value))
   }
 
   private open() {
@@ -108,12 +136,14 @@ class ThsLinkerClient {
       this.ws = ws
 
       ws.onopen = () => {
-        this.connected = true
+        this.setConnected(true)
         console.log('[ths-linker] connected', this.url)
+        // 主动拉取一次实例快照，确保界面与当前股票同步
+        this.list()
       }
 
       ws.onclose = () => {
-        this.connected = false
+        this.setConnected(false)
         this.ws = null
         console.log('[ths-linker] disconnected')
         this.scheduleReconnect()
@@ -124,7 +154,7 @@ class ThsLinkerClient {
       }
 
       ws.onmessage = (ev) => {
-        this.handleMessage(ev.data)
+        this.handleMessage(String(ev.data))
       }
     } catch (error) {
       console.log('[ths-linker] connect failed', error)
@@ -155,6 +185,13 @@ class ThsLinkerClient {
     this.ws.send(JSON.stringify(payload))
   }
 
+  private emitStock(payload: IThsStockPayload) {
+    const code = String(payload.code || '').trim()
+    if (!code) return
+    const next = { ...payload, code }
+    this.stockHandlers.forEach((handler) => handler(next))
+  }
+
   private handleMessage(raw: string) {
     let msg: ThsMessage
     try {
@@ -165,17 +202,35 @@ class ThsLinkerClient {
     }
 
     if (msg.type === 'stock' && typeof msg.code === 'string' && msg.code) {
-      this.stockHandlers.forEach((handler) => handler(msg.code))
-      if (Array.isArray(msg.instances)) {
-        const list = mapInstances(msg.instances)
-        this.instancesHandlers.forEach((handler) => handler(list))
-      }
+      this.emitStock({
+        code: msg.code,
+        ths_dir: typeof msg.ths_dir === 'string' ? msg.ths_dir : undefined,
+        market_id: typeof msg.market_id === 'string' ? msg.market_id : undefined,
+        symbol: typeof msg.symbol === 'string' ? msg.symbol : undefined,
+        instances: Array.isArray(msg.instances) ? msg.instances : undefined,
+      })
       return
     }
 
     if (msg.type === 'instances' && Array.isArray(msg.instances)) {
-      const list = mapInstances(msg.instances)
-      this.instancesHandlers.forEach((handler) => handler(list))
+      const stocks = msg.stocks && typeof msg.stocks === 'object' ? msg.stocks : undefined
+      const list = mapInstances(msg.instances, stocks)
+      this.instancesHandlers.forEach((handler) => handler(list, stocks))
+
+      // 连接/list 快照中的缓存股票：补推一次，便于软件立即响应当前代码
+      if (stocks) {
+        Object.entries(stocks).forEach(([ths_dir, info]) => {
+          if (!info?.code) return
+          const dirInstances = (msg.instances as IThsInstance[]).filter((item) => item.ths_dir === ths_dir)
+          this.emitStock({
+            code: info.code,
+            ths_dir,
+            market_id: info.market_id,
+            symbol: info.symbol,
+            instances: dirInstances.length ? dirInstances : (msg.instances as IThsInstance[]),
+          })
+        })
+      }
     }
   }
 }

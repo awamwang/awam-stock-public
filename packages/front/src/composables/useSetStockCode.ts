@@ -7,32 +7,41 @@ import { FRONT_SOCKET_PORT } from '@/utils/env'
 
 export const client: Socket = io(`http://localhost:${FRONT_SOCKET_PORT}`, { autoConnect: true })
 
+const connected = ref(false)
+let listenersBound = false
+
+function bindSocketListeners() {
+  if (listenersBound) return
+  listenersBound = true
+
+  const syncConnected = () => {
+    connected.value = client.connected
+  }
+
+  client.on('connect', () => {
+    syncConnected()
+    console.log('[background] set code socket connected')
+  })
+  client.on('disconnect', syncConnected)
+  client.on(SOCKET_EVENTS.serverSetStockCode, (code: string) => {
+    useGlobalStore().setStockCode(code)
+  })
+  syncConnected()
+}
+
 export default function (): {
   code: string
   connected: Ref<boolean>
   update: (code: string) => void
 } {
   const global = useGlobalStore()
-  const connected = ref(false)
-
-  client.on('connect', () => {
-    connected.value = true
-    console.log('[background] set code socket connected')
-
-    client.on('disconnect', () => {
-      connected.value = false
-    })
-
-    client.on(SOCKET_EVENTS.serverSetStockCode, (code: string) => {
-      global.setStockCode(code)
-    })
-  })
+  bindSocketListeners()
 
   function update(code: string) {
-    if (code !== global.stockCode) {
-      global.setStockCode(code)
-      client.emit(SOCKET_EVENTS.clientSetStockCode, code)
-    }
+    const next = String(code || '').trim()
+    if (!next || next === global.stockCode) return
+    global.setStockCode(next)
+    client.emit(SOCKET_EVENTS.clientSetStockCode, next)
   }
 
   return {

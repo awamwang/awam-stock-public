@@ -122,6 +122,7 @@ watch(
       <el-table-column type="selection" width="55" />
       <el-table-column prop="name" key="name" label="名称" :min-width="200" />
       <el-table-column v-if="isThsLinker" prop="id" key="id" label="pid" :min-width="100" />
+      <el-table-column v-if="isThsLinker" prop="code" key="code" label="当前代码" :min-width="100" />
       <el-table-column v-if="isThsLinker" prop="ths_dir" key="ths_dir" label="安装目录" :min-width="240" />
     </el-table>
   </div>

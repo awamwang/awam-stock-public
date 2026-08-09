@@ -38,7 +38,10 @@ export default {
       return this.$socket.connected ? '正常' : '断开'
     },
     setStockCodeStatus() {
-      return this.setStockCode.connected ? '正常' : '断开'
+      if (this.global.linkMode === 'thsLinker') {
+        return this.thsLinker.connected?.value ? '正常' : '断开'
+      }
+      return this.setStockCode.connected?.value ? '正常' : '断开'
     },
     enviromentStyle() {
       return {
