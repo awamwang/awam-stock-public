@@ -11,6 +11,7 @@ const global = useGlobalStore()
 const thsLinker = useThsLinker()
 const linkSoftIp = ref(global.linkSoftIp)
 const thsLinkerWsUrl = ref(global.thsLinkerWsUrl)
+const sendStockCode = ref('')
 const linkMode = computed({
   get: () => global.linkMode,
   set: (mode: LinkMode) => global.setLinkMode(mode),
@@ -25,6 +26,24 @@ async function saveLinkSoftIp() {
 
 async function saveThsLinkerWsUrl() {
   global.setThsLinkerWsUrl(thsLinkerWsUrl.value)
+}
+
+async function sendStockCodeByThsLink() {
+  const code = sendStockCode.value.trim()
+  if (!code) {
+    useNotify().notify('请输入股票代码', { type: 'warning' })
+    return
+  }
+  if (!thsLinker.connected.value) {
+    useNotify().notify('THS Link 未连接', { type: 'warning' })
+    return
+  }
+  await global.emitStockCodeToOneLinked(code)
+  useNotify().notify(`已发送代码 ${code}`, {
+    title: 'Success',
+    type: 'success',
+    duration: 1,
+  })
 }
 
 async function showLinkingToolWindow() {
@@ -115,6 +134,14 @@ watch(
       <el-input v-model="thsLinkerWsUrl" placeholder="ws://127.0.0.1:8765" size="default" clearable style="width: 280px"></el-input>
       <el-button type="primary" @click="saveThsLinkerWsUrl">保存地址</el-button>
       <el-button type="primary" @click="getStocksofts">刷新实例</el-button>
+      <el-input
+        v-model="sendStockCode"
+        placeholder="股票代码，回车发送到实例"
+        size="default"
+        clearable
+        style="width: 220px"
+        @keyup.enter="sendStockCodeByThsLink"
+      />
       <span>连接状态：{{ thsConnectedText }}</span>
     </el-space>
 
