@@ -68,6 +68,8 @@ export default defineConfig({
       '@C': join(__dirname, 'src/components/'),
       '@V': join(__dirname, 'src/views'),
       '@U': join(__dirname, 'src/utils'),
+      // hqchart 依赖 babel-runtime，但未正确声明，这里显式指向本地包
+      'babel-runtime': join(__dirname, 'node_modules/babel-runtime'),
     },
   },
   plugins: [
@@ -132,8 +134,9 @@ export default defineConfig({
       workbox: {
         maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
       },
+      // Electron 开发环境禁用，避免 workbox 的 require is not defined
       devOptions: {
-        enabled: true,
+        enabled: false,
       },
     }),
     ...devPlugins,
@@ -142,7 +145,10 @@ export default defineConfig({
   // esbuild: {
   //   // tsconfig: './tsconfig.build.json',
   // },
-  optimizeDeps: {},
+  optimizeDeps: {
+    // hqchart 依赖 babel-runtime（仅其 devDependency），需由本包声明后才能被预构建解析
+    include: ['hqchart'],
+  },
   server: {
     host: pkg.env.VITE_DEV_SERVER_HOST,
     port: pkg.env.VITE_DEV_SERVER_PORT,

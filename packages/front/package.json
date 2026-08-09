@@ -7,7 +7,7 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "dev": "vite",
+    "dev": "pnpm run build:server && vite",
     "dev:serve": "NODE_ENV=development ts-node -P tsconfig.server.json -r tsconfig-paths/register src/server/index.ts",
     "dev:servew": "NODE_ENV=development nodemon --exec 'ts-node -P tsconfig.server.json -r tsconfig-paths/register' src/server/index.ts",
     "dev:vue": "pnpm run dev:serve & NO_ELECTRON=true pnpm run dev",
@@ -34,6 +34,7 @@
     "node": ">=20.0.0"
   },
   "dependencies": {
+    "dotenv": "16.6.1",
     "vue": "^3.5.22"
   },
   "devDependencies": {
