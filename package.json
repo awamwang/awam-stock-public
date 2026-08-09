@@ -17,7 +17,8 @@
     "test:availability:api": "pnpm --filter @awamstock/server test:availability:api",
     "test:availability:third-party": "pnpm --filter @awamstock/server test:availability:third-party",
     "test:availability:files": "pnpm --filter @awamstock/server test:availability:files",
-    "test:availability:server": "pnpm --filter @awamstock/server test:availability:server"
+    "test:availability:server": "pnpm --filter @awamstock/server test:availability:server",
+    "test:ths-linker": "node ./scripts/ths-linker-listen.mjs"
   },
   "lint-staged": {
     "*.js": [

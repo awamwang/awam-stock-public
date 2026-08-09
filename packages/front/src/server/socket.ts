@@ -4,6 +4,7 @@ import { Server } from 'socket.io'
 import { FRONT_SERVER_SOCKET_PORT } from '@awamstock/shared/config'
 import { handleSetCodeEvent } from './handlers/set-code'
 import { handleStocksoftLinkEvent } from './handlers/stocksoft-link'
+import { handleThsLinkerBridge } from './handlers/ths-linker'
 
 export default function startSocketServer(): Server {
   const httpServer = createServer()
@@ -22,6 +23,7 @@ export default function startSocketServer(): Server {
 
     handleSetCodeEvent(client, io)
     handleStocksoftLinkEvent(client)
+    handleThsLinkerBridge(client, io)
 
     client.on('disconnect', () => {
       console.log('socket disconnect: ', client.id)

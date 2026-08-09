@@ -1,7 +1,7 @@
 import { Ref } from 'vue'
 
 import { useGlobalStore } from '@/stores/global'
-import useSetStockCode from '@/composables/useSetStockCode'
+import useSetStockCode, { client as frontSocket } from '@/composables/useSetStockCode'
 import { IThsStockPayload, thsLinkerClient } from '@/composables/thsLinkerClient'
 import type { IStocksoftWindow } from '@/server/handlers/stocksoft-link'
 
@@ -20,6 +20,10 @@ function isLinkedStockEvent(payload: IThsStockPayload, linked: IStocksoftWindow[
   return !!payload.instances?.some((item) => linkedIds.has(String(item.id)) || linkedDirs.has(item.ths_dir))
 }
 
+function syncServerBridge(enabled: boolean, url?: string) {
+  frontSocket.emit('thsLinkerSync', { enabled, url })
+}
+
 function ensureHandlers() {
   if (initialized) return
   initialized = true
@@ -31,7 +35,7 @@ function ensureHandlers() {
     connected.value = value
   })
 
-  // 实时监听 ths-linker 推送的股票代码，驱动本软件响应
+  // 渲染进程备用监听（主路径在 front-server bridge → Server_set_code）
   thsLinkerClient.onStock((payload) => {
     if (global.linkMode !== 'thsLinker') return
 
@@ -68,11 +72,13 @@ export default function useThsLinker(): {
   function connect() {
     ensureHandlers()
     thsLinkerClient.connect(global.thsLinkerWsUrl)
+    syncServerBridge(true, global.thsLinkerWsUrl)
     connected.value = thsLinkerClient.connected
   }
 
   function disconnect() {
     thsLinkerClient.disconnect()
+    syncServerBridge(false)
     connected.value = false
   }
 
