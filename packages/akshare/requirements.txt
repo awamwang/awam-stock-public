@@ -1,1 +1,3 @@
 aktools
+# Starlette 1.0+ 移除了 TemplateResponse(name, context) 旧签名，AKTools 0.0.91 尚未适配
+starlette>=0.46.0,<1.0.0
