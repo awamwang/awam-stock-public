@@ -1,5 +1,3 @@
-import fetch, { Response, RequestInit } from 'node-fetch'
-
 class HTTPResponseError extends Error {
   response: Response
 

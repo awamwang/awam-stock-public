@@ -253,7 +253,7 @@ export class DataWorker<T extends IDataWorkerData = IDataWorkerData> implements 
       await this.collection.updateOne(
         uqiueQuery,
         {
-          $set: this.data,
+          $set: this.data as any,
         },
         {
           upsert: true,

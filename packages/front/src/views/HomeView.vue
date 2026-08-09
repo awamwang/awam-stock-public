@@ -6,6 +6,7 @@
 </template>
 
 <script lang="ts">
-@VueOptions({})
-export default class HomeView extends VueClass {}
+export default {
+  name: 'HomeView',
+}
 </script>

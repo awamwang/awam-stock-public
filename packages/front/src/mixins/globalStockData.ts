@@ -1,10 +1,8 @@
-import { Vue } from 'vue-class-component'
 import useGlobalSocketData from '@/composables/data/useGlobalDingpanData'
 
-@VueOptions({})
-export default class GlobalSocketMixin extends Vue {
+export default {
   async created() {
     const { getGlobalDingpanData } = useGlobalSocketData()
     await getGlobalDingpanData()
-  }
+  },
 }

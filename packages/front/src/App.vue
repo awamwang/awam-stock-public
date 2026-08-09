@@ -20,9 +20,29 @@ import socketDataMixin from '@/mixins/socketData'
 import globalStockDataMixin from '@/mixins/globalStockData'
 import useSetStockCode from '@/composables/useSetStockCode'
 
-@VueOptions({
+export default {
+  mixins: [messageMixin, socketDataMixin, globalStockDataMixin],
+  data() {
+    return {
+      updaterShow: false,
+      global: useGlobalStore(),
+      environment: useEnvironmentStore(),
+      setStockCode: useSetStockCode(),
+    }
+  },
   computed: {
     ...mapState(useEnvironmentStore, ['temperature']),
+    socketStatus() {
+      return this.$socket.connected ? '正常' : '断开'
+    },
+    setStockCodeStatus() {
+      return this.setStockCode.connected ? '正常' : '断开'
+    },
+    enviromentStyle() {
+      return {
+        backgroundColor: greenToRed(this.environment.temperature),
+      }
+    },
   },
   watch: {
     socketStatus(v) {
@@ -36,34 +56,13 @@ import useSetStockCode from '@/composables/useSetStockCode'
       }
     },
   },
-})
-export default class App extends vueMixin(messageMixin, socketDataMixin, globalStockDataMixin) {
-  updaterShow = false
-  global = useGlobalStore()
-  environment = useEnvironmentStore()
-  setStockCode = useSetStockCode()
-
   mounted() {
     setTimeout(() => {
       if (!this.global.stockCode) {
         this.global.loadStorage()
       }
     }, 100)
-  }
-
-  get socketStatus() {
-    return this.$socket.connected ? '正常' : '断开'
-  }
-
-  get setStockCodeStatus() {
-    return this.setStockCode.connected ? '正常' : '断开'
-  }
-
-  get enviromentStyle() {
-    return {
-      backgroundColor: greenToRed(this.environment.temperature),
-    }
-  }
+  },
 }
 </script>
 

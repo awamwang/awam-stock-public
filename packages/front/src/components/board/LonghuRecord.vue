@@ -12,11 +12,17 @@
 </template>
 
 <script lang="ts">
-import { Vue } from 'vue-class-component'
 import { IDepartmentTrade } from '@awamstock/model'
 import { longhus } from '@/apis/flow'
 
-@VueOptions({
+export default {
+  data() {
+    return {
+      text: '龙虎历史',
+      global: useGlobalStore(),
+      list: [] as IDepartmentTrade[],
+    }
+  },
   watch: {
     'global.stockCode': {
       // immediate: true,
@@ -25,10 +31,5 @@ import { longhus } from '@/apis/flow'
       },
     },
   },
-})
-export default class LonghuRecord extends Vue {
-  text = '龙虎历史'
-  global = useGlobalStore()
-  list: IDepartmentTrade[] = []
 }
 </script>

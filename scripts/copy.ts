@@ -2,7 +2,7 @@ import path from 'path'
 import esbuild, { BuildOptions } from 'esbuild'
 import { copy } from 'esbuild-plugin-copy'
 import { exec, execSync } from 'child_process'
-import rimraf from 'rimraf'
+import { rimrafSync } from 'rimraf'
 
 export function copyFiles(subPath = '', copyOptions: BuildOptions = {}) {
   esbuild
@@ -15,14 +15,12 @@ export function copyFiles(subPath = '', copyOptions: BuildOptions = {}) {
             from: ['./src/locales/*.json'],
             to: ['./locales/'],
           },
-          keepStructure: true,
         }),
         copy({
           // resolveFrom: 'cwd',
           assets: {
             from: ['./src/locales/*'],
             to: ['./esm/locales'],
-            keepStructure: true,
           },
         }),
       ],
@@ -30,8 +28,8 @@ export function copyFiles(subPath = '', copyOptions: BuildOptions = {}) {
     })
     .catch(() => process.exit(1))
 
-  rimraf.sync('dist/*.json')
-  rimraf.sync('dist/esm/*.json')
+  rimrafSync('dist/*.json', { glob: true })
+  rimrafSync('dist/esm/*.json', { glob: true })
 }
 
 // let watch = false

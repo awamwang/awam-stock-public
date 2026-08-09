@@ -3,11 +3,15 @@
 </template>
 
 <script lang="ts">
-import { Vue } from 'vue-class-component'
 import useSetStockCode from '@/composables/useSetStockCode'
 
-@VueOptions({
-  beforeRouteEnter(to, from, next: RouterNext<SetCode>) {
+export default {
+  data() {
+    return {
+      global: useGlobalStore(),
+    }
+  },
+  beforeRouteEnter(to, from, next: RouterNext) {
     next(() => {
       const { update } = useSetStockCode()
 
@@ -19,8 +23,5 @@ import useSetStockCode from '@/composables/useSetStockCode'
       }
     })
   },
-})
-export default class SetCode extends Vue {
-  global = useGlobalStore()
 }
 </script>

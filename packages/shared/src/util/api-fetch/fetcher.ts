@@ -1,5 +1,4 @@
-import fetch, { Response, RequestInit } from 'node-fetch'
-import { IconvEncoding, decode, encode } from '../encoder'
+import { IconvEncoding, decode } from '../encoder'
 
 class HTTPResponseError extends Error {
   response: Response
@@ -35,7 +34,7 @@ const handleError = async (error: any) => {
 }
 
 export async function handleEncoding(resp: Response, encoding: IconvEncoding = 'utf-8') {
-  const buf = await resp.buffer()
+  const buf = Buffer.from(await resp.arrayBuffer())
 
   return decode(buf, encoding)
 }

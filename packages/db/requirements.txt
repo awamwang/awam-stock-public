@@ -1,5 +1,6 @@
-wencai
-pymongo
-pandas
-pydash
-pytdx
+wencai==0.2.6
+pymongo==4.17.0
+pandas==3.0.5
+numpy==2.5.1
+pydash==8.0.6
+pytdx==1.72

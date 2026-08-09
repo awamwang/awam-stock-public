@@ -1,22 +1,22 @@
 {
   "extends": "../../tsconfig.json",
-  // "include": ["src/**/*.ts", "src/**/*.vue", "typings/**/*.ts"],
+  "include": ["src/**/*.ts", "src/**/*.vue", "typings/**/*.ts"],
   "exclude": ["node_modules", "dist"],
   "compilerOptions": {
     "target": "ESNext",
     "module": "ESNext",
     "baseUrl": "./",
     "outDir": "./dist",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "importHelpers": true,
     "jsx": "preserve",
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "inlineSourceMap": false,
     "sourceMap": true,
-    "lib": ["dom", "es5"],
-    "typeRoots": ["./typings"],
-    "types": ["vue", "element-plus/global"],
+    "lib": ["dom", "ESNext"],
+    "typeRoots": ["./typings", "./node_modules/@types", "../../node_modules/@types"],
+    "types": ["vite/client"],
     "paths": {
       "@/*": ["src/*"],
       "@C/*": ["src/components/*"],
@@ -27,7 +27,7 @@
     "allowSyntheticDefaultImports": true,
     "isolatedModules": true,
     "emitDecoratorMetadata": false,
-    "skipLibCheck": true
-  },
-  "references": [{ "path": "./tsconfig.node.json" }]
+    "skipLibCheck": true,
+    "composite": false
+  }
 }

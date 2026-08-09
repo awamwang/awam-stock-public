@@ -23,15 +23,15 @@ export function getDefaultSchemaOptions<T extends PlainDataModel = PlainDataMode
   const defaultSchemaOptions: SchemaOptions<T> = {
     statics: {
       getIndexValues(this: Model<T>, doc: T): IndexValues<T> {
-        const indexConfig: IndexDefinition = this.schema.indexes()[0]
+        const indexConfig = this.schema.indexes()[0] as unknown as [IndexDefinition, IndexOptions]
         const indexes = Object.keys(indexConfig[0])
 
         return {
           values: _.zipObject(
             indexes,
             indexes.map((item) => doc[item])
-          ),
-          ...(indexConfig[1] as IndexOptions),
+          ) as UpdateQuery<T>,
+          ...indexConfig[1],
         }
       },
 

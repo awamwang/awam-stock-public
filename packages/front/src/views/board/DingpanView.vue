@@ -8,7 +8,7 @@ const global = useGlobalStore()
 const dingPan = useDingPanStore()
 const enviromentStore = useEnvironmentStore()
 
-const activeName = 'first'
+const activeName = ref('first')
 const globalMarketList = ['CN0Y', 'IXIC', 'DJI', 'SPX', 'USDIND', 'USDCNH', 'HSI', 'FTSE', 'BRN0Y']
 const enviroment = computed(() => enviromentStore.enviromentToShow)
 const yesterdayEnviroment = computed(() => enviromentStore.yesterdayEnviroment)

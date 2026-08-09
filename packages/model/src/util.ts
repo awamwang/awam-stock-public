@@ -183,17 +183,17 @@ export class ModelFactory<T extends PlainDataModel> {
     this.schemaGetter = function schemaGetter(this: ModelFactory<T>, mongoose: Mongoose) {
       const { timestamps = true, index } = this.options
 
-      const schema = new mongoose.Schema<T>(
+      const schema = new mongoose.Schema(
         {
           ...defaultDocumentSchema,
           ...getSchema(this.config),
-        },
+        } as any,
         {
           timestamps,
           collection: COLLECTIONS[this.name],
           ...getDefaultSchemaOptions(),
-        }
-      )
+        } as any
+      ) as mongoose.Schema<T>
       if (index) {
         schema.index(...index)
       }

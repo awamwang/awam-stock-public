@@ -12,9 +12,9 @@ const 准备 = function 准备(options: JobOptions = {}) {
   const { start, timezone = TIMEZONE } = options
   const runOnInit = afterTodayTime(ScheduleTime) // 如果当前时间在任务时间之后，则在初始化时执行一次
 
-  return new CronJob(
-    timeToCronTime(ScheduleTime),
-    async function () {
+  return CronJob.from({
+    cronTime: timeToCronTime(ScheduleTime),
+    onTick: async function () {
       await beforeStart()
 
       await new TradeCalendarNextYearUpdateWorker().work()
@@ -27,12 +27,10 @@ const 准备 = function 准备(options: JobOptions = {}) {
         console.log('[schedule] 非交易日，不执行准备任务')
       }
     },
-    null,
-    start || runOnInit,
-    timezone,
-    null,
-    runOnInit
-  )
+    start: start || runOnInit,
+    timeZone: timezone,
+    runOnInit,
+  })
 }
 
 export default 准备

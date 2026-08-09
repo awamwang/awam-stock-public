@@ -90,8 +90,6 @@ export default defineConfig({
             // default imports
             ['default', 'axios'], // import { default as axios } from 'axios',
           ],
-          'vue-class-component': ['Vue', ['Options', 'VueOptions'], ['Vue', 'VueClass'], ['mixins', 'vueMixin']],
-          '@awamwang/vue-socket.io-extended/decorator': [['default', 'Socket']],
           '@awamstock/shared/browser': ['_'],
           '@/stores/global': ['useGlobalStore'],
           '@/stores/block': ['useBlockStore'],
@@ -131,6 +129,9 @@ export default defineConfig({
     Legacy(),
     VitePWA({
       registerType: 'autoUpdate',
+      workbox: {
+        maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
+      },
       devOptions: {
         enabled: true,
       },

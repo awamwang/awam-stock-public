@@ -1,4 +1,4 @@
-import cheerio from 'cheerio'
+import * as cheerio from 'cheerio'
 import _ from 'lodash'
 
 import { parseStrNumber } from './browser/lang'

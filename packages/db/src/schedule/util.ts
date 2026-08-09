@@ -15,9 +15,9 @@ export function getCommonJob(scheduleTime: string, onTick: () => Promise<void>, 
   const { name = UNKNOWN, start, timezone = TIMEZONE, noSkipHint } = options
   const runOnInit = afterTodayTime(scheduleTime) // 如果当前时间在任务时间之后，则在初始化时执行一次
 
-  return new CronJob(
-    timeToCronTime(scheduleTime),
-    async function () {
+  return CronJob.from({
+    cronTime: timeToCronTime(scheduleTime),
+    onTick: async function () {
       await beforeStart()
 
       if (await isLastTradeDay()) {
@@ -26,10 +26,8 @@ export function getCommonJob(scheduleTime: string, onTick: () => Promise<void>, 
         !noSkipHint && console.log(`[schedule] 非交易日，不执行${name}任务`)
       }
     },
-    null,
-    start || runOnInit,
-    timezone,
-    null,
-    runOnInit
-  )
+    start: start || runOnInit,
+    timeZone: timezone,
+    runOnInit,
+  })
 }
