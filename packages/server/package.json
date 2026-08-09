@@ -21,6 +21,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "test:availability": "jest --config ./test/jest-availability.json --runInBand",
     "test:availability:api": "jest --config ./test/jest-availability.json --runInBand --testPathPatterns=api.availability-spec",
+    "test:availability:third-party": "jest --config ./test/jest-availability.json --runInBand --testPathPatterns=third-party.availability-spec",
     "test:availability:files": "jest --config ./test/jest-availability.json --runInBand --testPathPatterns=files.availability-spec",
     "test:availability:server": "jest --config ./test/jest-availability.json --runInBand --testPathPatterns=server.availability-spec",
     "add:module": "ts-node ./scripts/template/module-add.ts",

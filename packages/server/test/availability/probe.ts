@@ -87,3 +87,40 @@ export function assertLongTouPayload(label: string, data: any, expectedKey: stri
     throw new Error(`[${label}] 缺少预期字段 "${expectedKey}"\nBody: ${truncateBody(JSON.stringify(data))}`)
   }
 }
+
+/** 断言对象存在指定字段（大小写不敏感） */
+export function assertField(label: string, data: any, expectedKey: string) {
+  if (pickField(data, expectedKey) == null) {
+    throw new Error(`[${label}] 缺少预期字段 "${expectedKey}"\nBody: ${truncateBody(JSON.stringify(data))}`)
+  }
+}
+
+/** 断言字段为非空数组 */
+export function assertNonEmptyArray(label: string, data: any, expectedKey?: string) {
+  const value = expectedKey ? pickField(data, expectedKey) : data
+  if (!Array.isArray(value) || value.length === 0) {
+    throw new Error(`[${label}] 预期非空数组${expectedKey ? `字段 "${expectedKey}"` : ''}\nBody: ${truncateBody(JSON.stringify(data))}`)
+  }
+  return value
+}
+
+export function isNetworkError(err: unknown): boolean {
+  return String((err as any)?.message || err).includes('网络请求失败')
+}
+
+/** 文本/非 JSON 探测（如 stocksoft GBK 接口） */
+export async function probeText(label: string, url: string, options?: RequestInit): Promise<{ url: string; status: number; raw: string }> {
+  let response: Response
+  try {
+    response = await fetch(url, options)
+  } catch (err: any) {
+    throw new Error(`[${label}] 网络请求失败: ${err?.message || err}\nURL: ${url}`)
+  }
+
+  const raw = await response.text()
+  if (!response.ok) {
+    throw new Error(`[${label}] HTTP ${response.status} ${response.statusText}\nURL: ${url}\nBody: ${truncateBody(raw)}`)
+  }
+
+  return { url, status: response.status, raw }
+}
