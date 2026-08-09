@@ -26,7 +26,7 @@
     "inspect:ele": "electron --inspect=5858 dist/win-unpacked/AwamStock.exe",
     "preview": "vite preview",
     "lint": "eslint \"src/**/*.{ts,vue}\" && pnpm run lint:css",
-    "lint:css": "stylelint **/*.vue",
+    "lint:css": "stylelint \"src/**/*.vue\"",
     "update:browserslist": "npx update-browserslist-db@latest",
     "postinstall": "electron-builder install-app-deps"
   },

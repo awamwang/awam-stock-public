@@ -35,10 +35,11 @@ const apiProxyMiddleware = koa2_connect(
     on: {
       error(err, req, res) {
         if (res && !res.headersSent && typeof (res as any).writeHead === 'function') {
-          ;(res as any).writeHead(500, {
+          const response = res as any
+          response.writeHead(500, {
             'Content-Type': 'text/plain',
           })
-          ;(res as any).end('Something went wrong. And we are reporting a custom error message.' + err)
+          response.end('Something went wrong. And we are reporting a custom error message.' + err)
         }
       },
       proxyRes(proxyRes, req) {
