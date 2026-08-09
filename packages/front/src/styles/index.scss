@@ -1,5 +1,5 @@
-@import './icon';
-@import './element-config';
+@use './icon';
+@use './element-config';
 
 .border-dashed {
   border-top: 2px dashed var(--el-border-color);
