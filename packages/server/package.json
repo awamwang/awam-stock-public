@@ -19,6 +19,9 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
+    "test:availability": "jest --config ./test/jest-availability.json --runInBand",
+    "test:availability:api": "jest --config ./test/jest-availability.json --runInBand --testPathPatterns=api.availability-spec",
+    "test:availability:files": "jest --config ./test/jest-availability.json --runInBand --testPathPatterns=files.availability-spec",
     "add:module": "ts-node ./scripts/template/module-add.ts",
     "add:controller": "ts-node ./scripts/template/controller-add.ts"
   },
