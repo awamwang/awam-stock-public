@@ -4,25 +4,27 @@ import { IDingPanStock } from '@awamstock/model'
 const props = defineProps<{
   stock: Partial<IDingPanStock>
 }>()
-const { stock } = toRefs(props)
-
-const activeNames = ref(['0'])
 
 const global = useGlobalStore()
 
+const displayCode = computed(() => props.stock.code || global.stockCode || '')
+const displayName = computed(() => props.stock.name || (displayCode.value ? '加载中' : '未获取'))
+
+const activeNames = ref(['0'])
+
 const { getMoodStockByCode, getMoodBlocksByCode } = useDingPanStore()
-const moodStock = computed(() => getMoodStockByCode(stock.value?.code))
+const moodStock = computed(() => getMoodStockByCode(displayCode.value))
 const moodStockChange = computed(() => moodStock.value && Number(moodStock.value?.change))
-const moodBlocks = computed(() => getMoodBlocksByCode(stock.value?.code))
+const moodBlocks = computed(() => getMoodBlocksByCode(displayCode.value))
 </script>
 
 <template>
   <el-space wrap spacer="|" class="info">
-    <div class="name">
-      <el-link type="primary">{{ stock.name || '未获取' }}</el-link>
-      <el-link>&nbsp;({{ global.stockCode }})</el-link>
-      <el-link :href="`quicker:runaction:23235eb7-aba1-419c-9bbf-1aa4e0dbddc9?${stock.name} ${global.stockCode}`" type="danger">&nbsp;买</el-link>
-      <el-link :href="`quicker:runaction:d351f59f-8fe5-4dda-ba42-969294756e83?${stock.name} ${global.stockCode}`" type="success">&nbsp;卖</el-link>
+    <div class="name" :key="displayCode">
+      <el-link type="primary">{{ displayName }}</el-link>
+      <el-link>&nbsp;({{ displayCode }})</el-link>
+      <el-link :href="`quicker:runaction:23235eb7-aba1-419c-9bbf-1aa4e0dbddc9?${displayName} ${displayCode}`" type="danger">&nbsp;买</el-link>
+      <el-link :href="`quicker:runaction:d351f59f-8fe5-4dda-ba42-969294756e83?${displayName} ${displayCode}`" type="success">&nbsp;卖</el-link>
     </div>
     <el-tooltip placement="top" v-if="moodStock?.code">
       <!-- <template #content> 变化 {{ moodStock.change >= 0 ? `↑${moodStock.change}` : `↓${Math.abs(moodStock.change)}` }} </template> -->

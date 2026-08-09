@@ -17,33 +17,48 @@ const yiDongs = computed(() => getYiDongsByTitle(stock.value?.name))
 const marketMessages = computed(() => getMarketMessagesByName(stock.value?.name))
 const stockRadars = computed(() => getRadarsByCode(stock.value?.code))
 const beforeOpenStock = computed(() => getBeforeOpenStockByCode(stock.value?.code))
-const linkedLongTouBlocks = computed(() => blockStore.getLongTouBlocksByCode(stock.value?.code))
+const linkedLongTouBlocks = computed(() => blockStore.getLongTouBlocksByCode(stock.value?.code || stockCode.value))
 const stockPoolsLength = computed(() => stock.value?.stock_pools && stock.value.stock_pools.length)
 
+let reqId = 0
+
 async function getData(code: string) {
-  stock.value = (await dingPan({ code })) || {}
-  longhuList.value = (await longhus({ code })).data
+  const id = ++reqId
+  const [dingPanStock, longhuRes] = await Promise.all([dingPan({ code }), longhus({ code })])
+  // 丢弃过期请求，避免快速切股时旧数据覆盖新名称/代码
+  if (id !== reqId) return
+  stock.value = dingPanStock || { code }
+  longhuList.value = longhuRes.data || []
 }
 
-watch(stockCode, getData)
+watch(
+  stockCode,
+  (code) => {
+    if (!code) {
+      stock.value = {}
+      longhuList.value = []
+      return
+    }
+    // 先写入新代码并清空旧名称，确保标题区立即响应
+    stock.value = { code }
+    getData(code)
+  },
+  { immediate: true }
+)
+
 watch(
   () => route.name,
   (name) => {
-    if (name === 'ding-pan') {
-      if (stockCode.value && !stock.value.name) {
-        getData(stockCode.value)
-      }
+    if (name === 'ding-pan' && stockCode.value && !stock.value.name) {
+      getData(stockCode.value)
     }
-  },
-  {
-    immediate: true,
   }
 )
 </script>
 
 <template>
   <div class="stock-basic">
-    <StockBasicInfo :stock="stock"></StockBasicInfo>
+    <StockBasicInfo :key="stockCode || stock.code || 'empty'" :stock="stock"></StockBasicInfo>
 
     <div class="blocks">
       <BlockTag :blocks="linkedLongTouBlocks" :showCode="false" :noLink="true"></BlockTag>
