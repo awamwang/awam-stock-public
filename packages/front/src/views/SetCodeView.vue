@@ -1,15 +1,13 @@
 <template>
-  <div>code: {{ global.stockCode }}</div>
+  <div :key="stockCode">code: {{ stockCode }}</div>
 </template>
 
 <script lang="ts">
 import useSetStockCode from '@/composables/useSetStockCode'
 
 export default {
-  data() {
-    return {
-      global: useGlobalStore(),
-    }
+  computed: {
+    ...mapState(useGlobalStore, ['stockCode']),
   },
   beforeRouteEnter(to, from, next: RouterNext) {
     next(() => {

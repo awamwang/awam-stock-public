@@ -34,11 +34,12 @@ export default {
   },
   computed: {
     ...mapState(useEnvironmentStore, ['temperature']),
+    ...mapState(useGlobalStore, ['linkMode', 'thsLinkerWsUrl']),
     socketStatus() {
       return this.$socket.connected ? '正常' : '断开'
     },
     setStockCodeStatus() {
-      if (this.global.linkMode === 'thsLinker') {
+      if (this.linkMode === 'thsLinker') {
         return this.thsLinker.connected?.value ? '正常' : '断开'
       }
       return this.setStockCode.connected?.value ? '正常' : '断开'
@@ -60,11 +61,12 @@ export default {
         useNotify().notify('股票监听断开', { duration: 10 })
       }
     },
-    'global.linkMode'() {
+    // 使用 mapState 字段监听，避免 Options API 对 pinia 根对象字符串路径失效
+    linkMode() {
       this.thsLinker.syncByMode()
     },
-    'global.thsLinkerWsUrl'() {
-      if (this.global.linkMode === 'thsLinker') {
+    thsLinkerWsUrl() {
+      if (this.linkMode === 'thsLinker') {
         this.thsLinker.disconnect()
         this.thsLinker.connect()
       }
