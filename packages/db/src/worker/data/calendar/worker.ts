@@ -18,7 +18,7 @@ export class TradeCalendarNextYearUpdateWorker extends BatchWorker {
       const nextYear = String(Number(date.slice(0, -4)) + 1)
       await new TradeCalendarWorker().work({ start: nextYear + '0101', end: String(Number(nextYear) + 1) + '0101' })
     }
-    // await new TradeCalendarWorker().work({ start: '20240101', end: '20250101' })
+    // await new TradeCalendarWorker().work({ start: '20250101', end: '20260101' })
   }
 }
 

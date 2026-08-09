@@ -54,8 +54,16 @@ export async function getTradeCalendar(params: any = {}) {
   const list = (await getTradeCalendarData(params).catch(console.error)) || []
   const myList = list.map((o: any) => mapObj(o, tradeCalendarMap))
 
-  await TradeCalendar.create(myList).catch(ignoreDbError)
+  // 使用 bulkWrite 处理可能的冲突
+  const bulkOps = myList.map((doc) => ({
+    updateOne: {
+      filter: { date: doc.date },
+      update: { $set: doc },
+      upsert: true,
+    },
+  }))
 
+  await TradeCalendar.bulkWrite(bulkOps).catch(ignoreDbError)
   return myList
 }
 
