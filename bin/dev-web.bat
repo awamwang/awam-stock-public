@@ -1,41 +1,48 @@
-ï»¿@echo off
+@echo off
 setlocal EnableExtensions
-rem UTF-8 æŽ§åˆ¶å°ï¼Œé¿å…ä¸­æ–‡ä¹±ç 
-chcp 65001 >nul
 cd /d "%~dp0.."
 
 set "EXIT_CODE=0"
 set "NODE_ENV=development"
 if not defined AWST_ENV set "AWST_ENV=pc"
 
+rem double-click PATH bootstrap
+if exist "%ProgramFiles%\nodejs\" set "PATH=%ProgramFiles%\nodejs;%PATH%"
+if exist "%LOCALAPPDATA%\pnpm\" set "PATH=%LOCALAPPDATA%\pnpm;%PATH%"
+if exist "%APPDATA%\npm\" set "PATH=%APPDATA%\npm;%PATH%"
+
 title [AwamStock] DB + Server + Web DEV
 echo ========================================
-echo   å¯åŠ¨ DB + Server + ç½‘é¡µç‰ˆå‰ç«¯
-echo   é¡¹ç›®ç›®å½•: %CD%
+echo   Æô¶¯ DB + Server + ÍøÒ³°æÇ°¶Ë
+echo   ÏîÄ¿Ä¿Â¼: %CD%
 echo   AWST_ENV=%AWST_ENV%
 echo ========================================
 echo.
 
 where pnpm >nul 2>nul
-if errorlevel 1 (
-  echo [é”™è¯¯] æœªæ‰¾åˆ° pnpmï¼Œè¯·å…ˆå®‰è£…å¹¶ç¡®ä¿å·²åŠ å…¥ PATHã€‚
-  set "EXIT_CODE=1"
-  goto :end
-)
+if errorlevel 1 goto :no_pnpm
 
 call pnpm run dev:web
 set "EXIT_CODE=%ERRORLEVEL%"
+goto :after_run
 
+:no_pnpm
+echo [´íÎó] Î´ÕÒµ½ pnpm£¬ÇëÏÈ°²×°²¢È·±£ÒÑ¼ÓÈë PATH¡£
+set "EXIT_CODE=1"
+goto :end
+
+:after_run
 echo.
 echo ----------------------------------------
-if not "%EXIT_CODE%"=="0" (
-  echo è¿›ç¨‹å·²ç»“æŸï¼Œé€€å‡ºç : %EXIT_CODE%
-) else (
-  echo è¿›ç¨‹å·²æ­£å¸¸ç»“æŸã€‚
-)
+if not "%EXIT_CODE%"=="0" goto :run_fail
+echo ½ø³ÌÒÑÕý³£½áÊø¡£
+goto :end
+
+:run_fail
+echo ½ø³ÌÒÑ½áÊø£¬ÍË³öÂë: %EXIT_CODE%
 
 :end
 echo.
-echo çª—å£å°†ä¿æŒæ‰“å¼€ï¼ŒæŒ‰ä»»æ„é”®å…³é—­...
+echo ´°¿Ú½«±£³Ö´ò¿ª£¬°´ÈÎÒâ¼ü¹Ø±Õ...
 pause >nul
 endlocal & exit /b %EXIT_CODE%
