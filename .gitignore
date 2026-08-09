@@ -1,5 +1,8 @@
 .DS_Store
 *.log
+# aktools TimedRotatingFileHandler 轮转日志（如 aktools_log.log.2024-05-16）
+aktools_log.log*
+*.log.*
 *.swp
 *.lock
 *.pem
