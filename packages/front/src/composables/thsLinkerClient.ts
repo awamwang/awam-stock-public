@@ -23,10 +23,12 @@ export interface IThsStockMessage {
   instances?: IThsInstance[]
 }
 
+export type IThsStockInfo = { code: string; market_id?: string; symbol?: string }
+
 export interface IThsInstancesMessage {
   type: 'instances'
   instances: IThsInstance[]
-  stocks?: Record<string, { code: string; market_id?: string; symbol?: string }>
+  stocks?: Record<string, IThsStockInfo>
 }
 
 export interface IThsStockPayload {
@@ -45,10 +47,7 @@ type ConnectedHandler = (connected: boolean) => void
 
 const RECONNECT_MS = 3000
 
-function mapInstances(
-  instances: IThsInstance[] = [],
-  stocks?: IThsInstancesMessage['stocks']
-): IStocksoftWindow[] {
+function mapInstances(instances: IThsInstance[] = [], stocks?: IThsInstancesMessage['stocks']): IStocksoftWindow[] {
   return instances.map((item) => ({
     id: String(item.id),
     hwnd: String(item.hwnd),
@@ -213,21 +212,22 @@ class ThsLinkerClient {
     }
 
     if (msg.type === 'instances' && Array.isArray(msg.instances)) {
-      const stocks = msg.stocks && typeof msg.stocks === 'object' ? msg.stocks : undefined
-      const list = mapInstances(msg.instances, stocks)
+      const stocks: IThsInstancesMessage['stocks'] = msg.stocks && typeof msg.stocks === 'object' ? (msg.stocks as Record<string, IThsStockInfo>) : undefined
+      const instances = msg.instances as IThsInstance[]
+      const list = mapInstances(instances, stocks)
       this.instancesHandlers.forEach((handler) => handler(list, stocks))
 
       // 连接/list 快照中的缓存股票：补推一次，便于软件立即响应当前代码
       if (stocks) {
         Object.entries(stocks).forEach(([ths_dir, info]) => {
           if (!info?.code) return
-          const dirInstances = (msg.instances as IThsInstance[]).filter((item) => item.ths_dir === ths_dir)
+          const dirInstances = instances.filter((item) => item.ths_dir === ths_dir)
           this.emitStock({
             code: info.code,
             ths_dir,
             market_id: info.market_id,
             symbol: info.symbol,
-            instances: dirInstances.length ? dirInstances : (msg.instances as IThsInstance[]),
+            instances: dirInstances.length ? dirInstances : instances,
           })
         })
       }

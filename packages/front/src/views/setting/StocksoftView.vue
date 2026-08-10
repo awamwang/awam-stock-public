@@ -134,14 +134,7 @@ watch(
       <el-input v-model="thsLinkerWsUrl" placeholder="ws://127.0.0.1:8765" size="default" clearable style="width: 280px"></el-input>
       <el-button type="primary" @click="saveThsLinkerWsUrl">保存地址</el-button>
       <el-button type="primary" @click="getStocksofts">刷新实例</el-button>
-      <el-input
-        v-model="sendStockCode"
-        placeholder="股票代码，回车发送到实例"
-        size="default"
-        clearable
-        style="width: 220px"
-        @keyup.enter="sendStockCodeByThsLink"
-      />
+      <el-input v-model="sendStockCode" placeholder="股票代码，回车发送到实例" size="default" clearable style="width: 220px" @keyup.enter="sendStockCodeByThsLink" />
       <span>连接状态：{{ thsConnectedText }}</span>
     </el-space>
 
