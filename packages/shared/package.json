@@ -24,39 +24,39 @@
   "module": "dist/esm/index.js",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/esm/index.js",
-      "default": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "default": "./dist/index.js"
     },
     "./config": {
+      "types": "./dist/config/index.d.ts",
       "import": "./dist/esm/config/index.js",
-      "default": "./dist/config/index.js",
-      "types": "./dist/config/index.d.ts"
+      "default": "./dist/config/index.js"
     },
     "./global": {
+      "types": "./dist/config/global.d.ts",
       "import": "./dist/esm/config/global.js",
-      "default": "./dist/config/global.js",
-      "types": "./dist/config/global.d.ts"
+      "default": "./dist/config/global.js"
     },
     "./util": {
+      "types": "./dist/util/index.d.ts",
       "import": "./dist/esm/util/index.js",
-      "default": "./dist/util/index.js",
-      "types": "./dist/util/index.d.ts"
+      "default": "./dist/util/index.js"
     },
     "./browser": {
+      "types": "./dist/util/browser/index.d.ts",
       "import": "./dist/esm/util/browser/index.js",
-      "default": "./dist/util/browser/index.js",
-      "types": "./dist/util/browser/index.d.ts"
+      "default": "./dist/util/browser/index.js"
     },
     "./type": {
+      "types": "./dist/type/index.d.ts",
       "import": "./dist/esm/type/index.js",
-      "default": "./dist/type/index.js",
-      "types": "./dist/type/index.d.ts"
+      "default": "./dist/type/index.js"
     },
     "./mongoose": {
+      "types": "./dist/polyfill/mongoose.d.ts",
       "import": "./dist/esm/polyfill/mongoose.js",
-      "default": "./dist/polyfill/mongoose.js",
-      "types": "./dist/polyfill/mongoose.d.ts"
+      "default": "./dist/polyfill/mongoose.js"
     },
     "./src/*": "./src/*",
     "./package.json": "./package.json"
