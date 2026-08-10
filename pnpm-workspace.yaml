@@ -6,3 +6,6 @@ packageExtensions:
     dependencies:
       babel-runtime: ^6.26.0
       jquery: ^3.7.1
+
+patchedDependencies:
+  http-proxy@1.18.1: patches/http-proxy@1.18.1.patch
