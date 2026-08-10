@@ -28,8 +28,12 @@
       "prettier --write"
     ],
     "*.ts?(x)": [
-      "eslint",
+      "eslint --fix",
       "prettier --parser=typescript --write"
+    ],
+    "*.vue": [
+      "eslint --fix",
+      "prettier --write"
     ]
   },
   "devDependencies": {
