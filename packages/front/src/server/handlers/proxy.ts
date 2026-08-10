@@ -3,8 +3,10 @@ import { config as envConfig } from 'dotenv'
 import Router from 'koa-router'
 import { createProxyMiddleware } from 'http-proxy-middleware'
 import koa2_connect from '../libs/koa2-connect'
+import { buildServerOrigin } from '../../utils/server-origin'
 
 // 从前端包目录加载 env，避免 electron 运行时 cwd 导致读不到配置
+// 优先级（后者覆盖前者）与 Vite 一致：.env → .env.local → .env.[mode] → .env.[mode].local
 const frontEnvDir = join(__dirname, '../../../envs')
 envConfig({ path: join(frontEnvDir, '.env'), override: true })
 envConfig({ path: join(frontEnvDir, '.env.local'), override: true })
@@ -18,8 +20,8 @@ export const apiPrefix = process.env.VITE_API_PREFIX || '/api/v1'
 
 const isLocalHost = serverHost === 'localhost' || serverHost === '127.0.0.1'
 // 本地 Nest 为 http；远程才走 https（此前 https 连本地会 EPROTO）
-const ApiUrl = `${isLocalHost ? 'http' : 'https'}://${serverHost}:${serverPort}`
-console.log('[proxy] api target:', ApiUrl)
+const ApiUrl = buildServerOrigin(serverHost, serverPort)
+console.log('[proxy] api target:', ApiUrl, `(from envs, NODE_ENV=${nodeEnv})`)
 
 function isGetRequest(req: any) {
   return /^(GET|HEAD|OPTIONS|TRACE)$/.test(req.method)
