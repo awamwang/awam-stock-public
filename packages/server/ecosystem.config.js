@@ -11,7 +11,7 @@ module.exports = {
       // watch: ['./src'],
       env: {},
       out_file: '/var/log/stock-server/out.log',
-      err_file: '/var/log/stock-server/out.log',
+      err_file: '/var/log/stock-server/err.log',
       log_date_format: 'YYYY-MM-DD HH:mm Z',
     },
     {

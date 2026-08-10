@@ -14,7 +14,7 @@ module.exports = {
       out_file: '/var/log/stock-akshare/out.log',
       err_file: '/var/log/stock-akshare/err.log',
       log_date_format: 'YYYY-MM-DD HH:mm Z',
-    }
+    },
   ],
 
   deploy: {

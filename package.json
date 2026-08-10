@@ -9,9 +9,12 @@
   "scripts": {
     "preinstall": "npx only-allow pnpm",
     "lint": "eslint packages",
+    "build": "pnpm -r --filter '!@awamstock/front' --if-present build",
     "build:declarations": "tsc --declaration --emitDeclarationOnly",
     "dev:db-server": "pnpm --parallel --filter @awamstock/db --filter @awamstock/server run dev",
     "dev:web": "node ./scripts/dev-web.mjs",
+    "pm2:start": "node ./scripts/pm2-start.mjs",
+    "pm2:start:skip-build": "node ./scripts/pm2-start.mjs --skip-build",
     "test": "pnpm run test:availability",
     "test:availability": "pnpm --filter @awamstock/server test:availability",
     "test:availability:api": "pnpm --filter @awamstock/server test:availability:api",
