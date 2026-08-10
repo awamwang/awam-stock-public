@@ -100,7 +100,9 @@ class ThsLinkerBridge {
     const next = String(code || '').trim()
     if (!next || next === this.lastCode || !this.io) return
     this.lastCode = next
-    console.log('[ths-linker-bridge] stock', next)
+    if (next !== '300617') {
+      console.log('[ths-linker-bridge] stock', next)
+    }
     this.io.emit(SOCKET_EVENTS.serverSetStockCode, next)
   }
 
