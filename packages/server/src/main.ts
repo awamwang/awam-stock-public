@@ -1,6 +1,6 @@
 import config from '@awamstock/shared/config'
 
-import { Logger } from '@nestjs/common'
+import { Logger, RequestMethod } from '@nestjs/common'
 import { NestFactory } from '@nestjs/core'
 import helmet from 'helmet'
 import compression from 'compression'
@@ -17,7 +17,13 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     // logger: ['error', 'warn'],
   })
-  app.setGlobalPrefix(config.api.apiPrefix)
+  // 根路径 /、/health 留给探活，不挂 api 前缀
+  app.setGlobalPrefix(config.api.apiPrefix, {
+    exclude: [
+      { path: '/', method: RequestMethod.GET },
+      { path: 'health', method: RequestMethod.GET },
+    ],
+  })
 
   // app.useGlobalInterceptors(new LoggingInterceptor())
   app.useGlobalFilters(new GlobalExceptionFilter())

@@ -12,7 +12,6 @@ export default class GlobalExceptionFilter extends BaseExceptionFilter {
 
   catch(exception: unknown, host: ArgumentsHost) {
     // super.catch(exception, host)
-    this.logger.error(exception)
     const ctx = host.switchToHttp()
     // const req = ctx.getRequest()
     // console.log(req.url, req.body, req.headers)
@@ -22,6 +21,12 @@ export default class GlobalExceptionFilter extends BaseExceptionFilter {
     const status = exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR
     const message = exception instanceof HttpException ? exception.message : INTERNAL_ERROR_TEXT
 
+    // 404（如浏览器扫 /js/env.js）降级，避免污染 error 日志
+    if (status === HttpStatus.NOT_FOUND) {
+      this.logger.warn(message)
+    } else {
+      this.logger.error(exception)
+    }
     const resp: IFailedResponse = {
       code: status || HttpStatus.INTERNAL_SERVER_ERROR,
     }
