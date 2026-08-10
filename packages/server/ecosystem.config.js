@@ -17,11 +17,10 @@ module.exports = {
     {
       name: 'stock-server',
       cwd: './',
-      script: 'npm',
-      args: 'start',
-      max_restarts: 3,
-      watch: ['./dist'],
-      ignore_watch: ['dist/data'],
+      // monorepo paths 编译后入口为 dist/server/src/main.js
+      script: 'dist/server/src/main.js',
+      max_restarts: 5,
+      watch: false,
       env: {},
       out_file: '/var/log/stock-server/out.log',
       err_file: '/var/log/stock-server/err.log',

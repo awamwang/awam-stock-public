@@ -5,7 +5,6 @@
   "compilerOptions": {
     "target": "ESNext",
     "module": "ESNext",
-    "baseUrl": "./",
     "outDir": "./dist",
     "moduleResolution": "bundler",
     "importHelpers": true,
@@ -18,10 +17,10 @@
     "typeRoots": ["./typings", "./node_modules/@types", "../../node_modules/@types"],
     "types": ["vite/client"],
     "paths": {
-      "@/*": ["src/*"],
-      "@C/*": ["src/components/*"],
-      "@V/*": ["src/views/*"],
-      "@U/*": ["src/utils/*"]
+      "@/*": ["./src/*"],
+      "@C/*": ["./src/components/*"],
+      "@V/*": ["./src/views/*"],
+      "@U/*": ["./src/utils/*"]
     },
     "strict": true,
     "allowSyntheticDefaultImports": true,
