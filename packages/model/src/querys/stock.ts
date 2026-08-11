@@ -31,10 +31,13 @@ const safeScorePipeline = [
   },
   {
     $replaceRoot: {
+      // 合并安全分字段，并始终保留股票自身的 code/name/industry
       newRoot: {
         $mergeObjects: [
           '$safe_score',
           {
+            code: '$code',
+            name: '$name',
             industry: '$industry',
           },
         ],
