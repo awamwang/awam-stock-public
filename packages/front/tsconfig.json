@@ -16,6 +16,7 @@
     "lib": ["dom", "ESNext"],
     "typeRoots": ["./typings", "./node_modules/@types", "../../node_modules/@types"],
     "types": ["vite/client"],
+    "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
       "@C/*": ["./src/components/*"],
