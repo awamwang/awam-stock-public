@@ -267,6 +267,52 @@ describe('全量第三方接口可用性', () => {
     })
   })
 
+  describe('同花顺 ThsData', () => {
+    it('limit_up/limit_up_pool（涨停池）→ data.info', async () => {
+      const label = '同花顺/limit_up_pool'
+      const date = new Date()
+      const ymd = `${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, '0')}${String(date.getDate()).padStart(2, '0')}`
+      const qs = new URLSearchParams({
+        page: '1',
+        limit: '5',
+        field: '199112,10,9001,330323,330324,330325,9002,330329,133971,133970,1968584,3475914,9003,9004',
+        filter: 'HS,GEM2STAR,ST',
+        order_field: '330324',
+        order_type: '0',
+        date: ymd,
+      })
+      const thsBase = (baseUrl as Record<string, string>).thsData || 'https://data.10jqka.com.cn/dataapi'
+      const thsHeaders = (headers as Record<string, any>).thsData || {
+        accept: 'application/json, text/plain, */*',
+        referer: 'https://data.10jqka.com.cn/',
+        'user-agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+      }
+      const { data } = await probeJson(label, `${thsBase}/limit_up/limit_up_pool?${qs.toString()}`, {
+        headers: thsHeaders,
+      })
+      if (pickField(data, 'status_code') !== 0) {
+        throw new Error(
+          `[${label}] status_code=${pickField(data, 'status_code')}, status_msg=${pickField(data, 'status_msg') ?? ''}\nBody: ${truncateBody(JSON.stringify(data))}`
+        )
+      }
+      assertField(label, data, 'data')
+      const info = pickField(data.data, 'info')
+      if (!Array.isArray(info)) {
+        throw new Error(`[${label}] data.info 缺失或非数组\nBody: ${truncateBody(JSON.stringify(data))}`)
+      }
+      // 非交易日可能为空列表，有数据时校验首条结构
+      if (info.length > 0) {
+        expect(info[0]).toEqual(
+          expect.objectContaining({
+            code: expect.any(String),
+            name: expect.any(String),
+          })
+        )
+      }
+    })
+  })
+
   describe('东方财富 EastMoney', () => {
     it('kamt.rtmin（北向资金分时）→ data', async () => {
       const label = '东方财富/kamt.rtmin'

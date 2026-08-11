@@ -67,6 +67,8 @@ const BASE_URL = {
   baoerFlash: 'https://flash-api.xuangubao.cn',
   baoer: 'https://api.xuangubao.cn',
   eastmoney: 'https://push2.eastmoney.com/api',
+  /** 同花顺 dataapi（涨停池等），路径形如 /dataapi/limit_up/... */
+  thsData: 'https://data.10jqka.com.cn/dataapi',
   aktools: 'http://127.0.0.1:8988',
   stocksoftLink: 'http://172.28.0.1:8081',
 }
@@ -86,6 +88,15 @@ export const api = {
       'sec-fetch-mode': 'cors',
       'sec-fetch-site': 'same-site',
       'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.5060.114 Safari/537.36 Edg/103.0.1264.62',
+    },
+    /** 同花顺 dataapi；服务端直连无需 CORS，带浏览器 UA 更稳 */
+    thsData: {
+      accept: 'application/json, text/plain, */*',
+      'accept-language': 'zh-CN,zh;q=0.9',
+      origin: 'https://data.10jqka.com.cn',
+      referer: 'https://data.10jqka.com.cn/',
+      'user-agent':
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
     },
   },
 }
