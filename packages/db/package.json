@@ -16,6 +16,7 @@
     "dev": "pnpm run start:ts",
     "probe:ths-limit-up": "node scripts/probe-ths-limit-up.mjs",
     "probe:ths-limit-up:ts": "ts-node -r tsconfig-paths/register src/worker/data/ths-limit-up.ts",
+    "ingest:ths-limit-up": "ts-node -r tsconfig-paths/register src/worker/data/ths-limit-up.ts --work",
     "lint": "eslint . --ext .ts",
     "pm2:start": "node -e \"require('fs').mkdirSync('/var/log/stock-db',{recursive:true})\" && pm2 startOrReload ecosystem.config.js --only stock-db",
     "pm2:start-ts": "pnpm install -F=db && NODE_ENV=development pm2 startOrReload ecosystem.config.js --only stock-db-ts",
