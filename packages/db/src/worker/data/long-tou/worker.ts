@@ -378,7 +378,21 @@ export class 涨停信息 extends DataWorker {
         return day === today || day === todayDash
       }) || changeList[0]
 
-    let change =
+    // ChangeStatistics 与 MoodNumCount 兜底字段并集
+    let change: {
+      source: string
+      ztjs: number
+      df_num: number
+      strong: number
+      lbgd: number
+      tip: string
+      day: string
+      SZJS?: number
+      XDJS?: number
+      qscln?: number
+      bl?: number
+      color?: number
+    } | null =
       changeToday != null
         ? {
             source: 'ChangeStatistics',
