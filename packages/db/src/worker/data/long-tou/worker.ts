@@ -326,8 +326,9 @@ export async function 席位龙虎榜() {
   })
 }
 
-// 涨停信息（ZhangTingExpression + ChangeStatistics 情绪增强）
-// {{LongTouurl}}?a=ZhangTingExpression&apiv=${API_V}&c=HomeDingPan&PhoneOSNew=1&
+// 涨停信息
+// 主源 ZhangTingExpression 盘后常返回 list 占位；ChangeStatistics 偶发空 body。
+// 回退顺序：有效 info → ChangeStatistics.change → MoodNumCount（家数摘要）
 export class 涨停信息 extends DataWorker {
   protected needArchive = true
 
@@ -337,7 +338,7 @@ export class 涨停信息 extends DataWorker {
   }
 
   async get() {
-    const [expressionRes, changeRes] = await Promise.all([
+    const [expressionRes, changeRes, moodRes] = await Promise.all([
       myFetch(`${baseUrl.LongTou}?a=ZhangTingExpression&apiv=${API_V}&c=HomeDingPan&PhoneOSNew=1&`).catch((err) => {
         console.warn('[worker] 涨停信息：ZhangTingExpression 请求失败', err)
         return null
@@ -346,34 +347,71 @@ export class 涨停信息 extends DataWorker {
         console.warn('[worker] 涨停信息：ChangeStatistics 请求失败', err)
         return null
       }),
+      longTouPost(LongTouHqUrl, {
+        a: 'MoodNumCount',
+        c: 'MarketMood',
+        apiv: 'w35',
+        PhoneOSNew: 2,
+        VerSion: '5.13.0.7',
+      }).catch((err) => {
+        console.warn('[worker] 涨停信息：MoodNumCount 请求失败', err)
+        return null
+      }),
     ])
 
     const info = Array.isArray(expressionRes?.info) ? expressionRes.info : null
     // 非交易时段接口可能返回 ["kaipanla.com", ...] 占位 list，避免写入无效数据
     const validInfo = info && info.length >= 12 && typeof info[0] === 'number' ? info : null
     if (!validInfo) {
-      console.warn('[worker] 涨停信息：当前无有效 info（可能非交易时段）', {
+      console.warn('[worker] 涨停信息：ZhangTingExpression 无有效 info', {
         errcode: expressionRes?.errcode,
         keys: expressionRes ? Object.keys(expressionRes) : [],
       })
     }
 
     const today = timer.today()
+    const todayDash = `${today.slice(0, 4)}-${today.slice(4, 6)}-${today.slice(6, 8)}`
     const changeList = ensureArray(changeRes?.info)
-    const changeToday = changeList.find((item: any) => String(item?.Day || '') === today) || changeList[0]
-    const change =
+    const changeToday =
+      changeList.find((item: any) => {
+        const day = String(item?.Day || '')
+        return day === today || day === todayDash
+      }) || changeList[0]
+
+    let change =
       changeToday != null
         ? {
+            source: 'ChangeStatistics',
             ztjs: Number(changeToday.ztjs) || 0,
             df_num: Number(changeToday.df_num) || 0,
             strong: Number(changeToday.strong) || 0,
             lbgd: Number(changeToday.lbgd) || 0,
             tip: typeof changeRes?.tip === 'string' ? changeRes.tip : '',
-            day: String(changeToday.Day || today),
+            day: String(changeToday.Day || todayDash),
           }
         : null
 
+    // ChangeStatistics 盘后常返回空 body；用 MoodNumCount 家数摘要兜底
+    const mood = moodRes?.list && typeof moodRes.list === 'object' ? moodRes.list : null
+    if (!change && mood) {
+      change = {
+        source: 'MoodNumCount',
+        ztjs: Number(mood.ZTJS) || 0,
+        df_num: Number(mood.DTJS) || 0,
+        strong: 0,
+        lbgd: 0,
+        tip: '',
+        day: todayDash,
+        SZJS: Number(mood.SZJS) || 0,
+        XDJS: Number(mood.XDJS) || 0,
+        qscln: Number(mood.qscln) || 0,
+        bl: Number(mood.bl) || 0,
+        color: Number(mood.color) || 0,
+      }
+    }
+
     if (!validInfo && !change) {
+      console.warn('[worker] 涨停信息：无可用数据（Expression/ChangeStatistics/MoodNumCount 均无效）')
       return null as any
     }
 
