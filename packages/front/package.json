@@ -21,7 +21,7 @@
     "pack": "electron-builder --dir",
     "build:server": "node ./esbuild.server.js",
     "build:kraken": "KRAKEN=true vite build",
-    "build:all": "pnpm run clean && pnpm run lint && pnpm run typecheck:tsc && vite build && pnpm run build:server && pnpm run build:ele",
+    "build:all": "pnpm run clean && pnpm run lint && pnpm run typecheck:tsc && pnpm run build:server && vite build && pnpm run build:ele",
     "build": "pnpm run build:all ",
     "inspect:ele": "electron --inspect=5858 dist/win-unpacked/AwamStock.exe",
     "preview": "vite preview",
@@ -126,6 +126,21 @@
       "!**/shared/node_modules/*",
       "!**/model/node_modules/*",
       "!**/db/node_modules/*"
+    ],
+    "asarUnpack": [
+      "dist/server/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "envs",
+        "to": "envs",
+        "filter": [
+          "**/*",
+          "!.env.development",
+          "!.env.development.local",
+          "!.env.example"
+        ]
+      }
     ],
     "directories": {
       "buildResources": "assets"

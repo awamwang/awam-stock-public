@@ -17,8 +17,7 @@ module.exports = {
     {
       name: 'stock-server',
       cwd: './',
-      // monorepo paths 编译后入口为 dist/server/src/main.js
-      script: 'dist/server/src/main.js',
+      script: 'dist/main.js',
       max_restarts: 5,
       watch: false,
       env: {},

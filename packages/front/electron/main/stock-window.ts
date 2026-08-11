@@ -1,3 +1,4 @@
+import { existsSync } from 'fs'
 import { join } from 'path'
 import { app, BrowserWindow, shell, ipcMain, IpcMainInvokeEvent, utilityProcess, UtilityProcess } from 'electron'
 import log from 'electron-log'
@@ -33,16 +34,61 @@ export function loadPage(win: BrowserWindow, options: { url: string; hash?: stri
   }
 }
 
+/** 解析 front-server 入口；打包后优先使用 asar.unpacked，供 utilityProcess.fork */
+function resolveServerEntry() {
+  const packagedPath = join(ROOT_PATH.public, 'server/index.js')
+  if (!app.isPackaged) {
+    return packagedPath
+  }
+  const unpackedPath = packagedPath.replace(/app\.asar([\\/])/, 'app.asar.unpacked$1')
+  if (existsSync(unpackedPath)) {
+    return unpackedPath
+  }
+  return packagedPath
+}
+
+/** 解析 front 包 envs 目录；安装包走 extraResources */
+function resolveEnvsDir() {
+  if (app.isPackaged) {
+    return join(process.resourcesPath, 'envs')
+  }
+  return join(__dirname, '../../../envs')
+}
+
 function createServer() {
-  // 以 front 包根目录为 cwd，确保 dotenv 能加载 envs/.env*
-  const frontRoot = join(__dirname, '../../..')
-  server = utilityProcess.fork(join(ROOT_PATH.public, 'server/index.js'), [], {
-    cwd: frontRoot,
-    env: {
-      ...process.env,
-      NODE_ENV: process.env.NODE_ENV || 'development',
-    },
-    stdio: 'pipe',
+  const serverEntry = resolveServerEntry()
+  const nodeEnv = app.isPackaged ? 'production' : process.env.NODE_ENV || 'development'
+  const envsDir = resolveEnvsDir()
+  log.info(`[front-server] starting: ${serverEntry} (packaged=${app.isPackaged}, NODE_ENV=${nodeEnv})`)
+  log.info(`[front-server] envs dir: ${envsDir}`)
+
+  if (!existsSync(serverEntry)) {
+    log.error(`[front-server] entry not found: ${serverEntry}`)
+    return
+  }
+  if (!existsSync(envsDir)) {
+    log.error(`[front-server] envs dir not found: ${envsDir}`)
+  }
+
+  // 以 front 包根目录为 cwd；安装包用 resources，便于相对路径兜底
+  const frontRoot = app.isPackaged ? process.resourcesPath : join(__dirname, '../../..')
+  try {
+    server = utilityProcess.fork(serverEntry, [], {
+      cwd: frontRoot,
+      env: {
+        ...process.env,
+        NODE_ENV: nodeEnv,
+        AWAM_FRONT_ENVS_DIR: envsDir,
+      },
+      stdio: 'pipe',
+    })
+  } catch (err) {
+    log.error(`[front-server] fork failed: ${err instanceof Error ? err.stack || err.message : String(err)}`)
+    return
+  }
+
+  server.on('spawn', () => {
+    log.info(`[front-server] spawned pid=${server?.pid ?? 'unknown'}`)
   })
   server.stdout?.on('data', (data) => {
     log.info(`[front-server] ${String(data).trimEnd()}`)

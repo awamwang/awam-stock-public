@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { config as envConfig } from 'dotenv'
 import Router from 'koa-router'
@@ -5,9 +6,19 @@ import { createProxyMiddleware } from 'http-proxy-middleware'
 import koa2_connect from '../libs/koa2-connect'
 import { buildServerOrigin } from '../../utils/server-origin'
 
+/** 解析 envs 目录：主进程注入 > dist/server 相对路径 > public/server 相对路径 */
+function resolveFrontEnvDir() {
+  const fromMain = process.env.AWAM_FRONT_ENVS_DIR
+  if (fromMain && existsSync(fromMain)) {
+    return fromMain
+  }
+  const candidates = [join(__dirname, '../../envs'), join(__dirname, '../../../envs')]
+  return candidates.find((dir) => existsSync(dir)) || candidates[candidates.length - 1]
+}
+
 // 从前端包目录加载 env，避免 electron 运行时 cwd 导致读不到配置
 // 优先级（后者覆盖前者）与 Vite 一致：.env → .env.local → .env.[mode] → .env.[mode].local
-const frontEnvDir = join(__dirname, '../../../envs')
+const frontEnvDir = resolveFrontEnvDir()
 envConfig({ path: join(frontEnvDir, '.env'), override: true })
 envConfig({ path: join(frontEnvDir, '.env.local'), override: true })
 const nodeEnv = process.env.NODE_ENV || 'development'
@@ -15,13 +26,14 @@ envConfig({ path: join(frontEnvDir, `.env.${nodeEnv}`), override: true })
 envConfig({ path: join(frontEnvDir, `.env.${nodeEnv}.local`), override: true })
 
 export const serverHost = (process.env.VITE_SERVER_IP || 'stock.awam.wang').trim()
-export const serverPort = process.env.VITE_SERVER_PORT || 7001
+const isLocalHost = serverHost === 'localhost' || serverHost === '127.0.0.1'
+// 本地 Nest 默认 7001；远程默认 443（nginx）
+export const serverPort = process.env.VITE_SERVER_PORT || (isLocalHost ? 7001 : 443)
 export const apiPrefix = process.env.VITE_API_PREFIX || '/api/v1'
 
-const isLocalHost = serverHost === 'localhost' || serverHost === '127.0.0.1'
 // 本地 Nest 为 http；远程才走 https（此前 https 连本地会 EPROTO）
 const ApiUrl = buildServerOrigin(serverHost, serverPort)
-console.log('[proxy] api target:', ApiUrl, `(from envs, NODE_ENV=${nodeEnv})`)
+console.log('[proxy] api target:', ApiUrl, `(from envs dir=${frontEnvDir}, NODE_ENV=${nodeEnv})`)
 
 function isGetRequest(req: any) {
   return /^(GET|HEAD|OPTIONS|TRACE)$/.test(req.method)
