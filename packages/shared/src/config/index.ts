@@ -62,7 +62,12 @@ export const front = {
  * api配置
  */
 const BASE_URL = {
+  /** 旧行情宿主（板块排行等） */
   LongTou: 'https://apphq.longhuvip.com/w1/api/index.php',
+  /** 新行情宿主（竞价榜 / 盯盘首页等） */
+  LongTouHq: 'https://apphwhq.longhuvip.com/w1/api/index.php',
+  /** 历史宿主（成分股 / ChangeStatistics 等） */
+  LongTouHis: 'https://apphis.longhuvip.com/w1/api/index.php',
   tusahre: 'http://api.tushare.pro',
   baoerFlash: 'https://flash-api.xuangubao.cn',
   baoer: 'https://api.xuangubao.cn',

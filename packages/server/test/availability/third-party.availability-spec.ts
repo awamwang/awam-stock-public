@@ -65,15 +65,14 @@ describe('全量第三方接口可用性', () => {
       assertNonEmptyArray(label, data, 'list')
     })
 
-    it('ZhiShuStockList_W8（板块成分股，需 Token）→ Stocks/list', async () => {
+    it('ZhiShuStockList_W8（板块成分股，需 Token，走 apphis）→ Stocks/list', async () => {
       const label = '开盘啦/ZhiShuStockList_W8'
       const userId = requireEnv('LONG_TOU_USERID', label)
       const token = requireEnv('LONG_TOU_TOKEN', label)
+      const his = (baseUrl as Record<string, string>).LongTouHis || 'https://apphis.longhuvip.com/w1/api/index.php'
       const { data } = await probeJson(
         label,
-        longTouUrl(
-          `Order=1&st=5&a=ZhiShuStockList_W8&c=ZhiShuRanking&PhoneOSNew=1&old=1&Token=${token}&Index=0&apiv=w25&Type=6&UserID=${userId}&PlateID=${samplePlateId}&`
-        )
+        `${his}?Order=1&st=5&a=ZhiShuStockList_W8&c=ZhiShuRanking&PhoneOSNew=1&old=1&Token=${token}&Index=0&apiv=w25&Type=6&UserID=${userId}&PlateID=${samplePlateId}&`
       )
       const errcode = pickField(data, 'errcode')
       if (errcode != null && String(errcode) !== '0') {
@@ -86,6 +85,14 @@ describe('全量第三方接口可用性', () => {
       if (!Array.isArray(stocks) && !Array.isArray(list)) {
         throw new Error(`[${label}] 缺少 Stocks 或 list\nPlateID=${samplePlateId}\nBody: ${truncateBody(JSON.stringify(data))}`)
       }
+    })
+
+    it('ChangeStatistics（涨停情绪统计）→ info', async () => {
+      const label = '开盘啦/ChangeStatistics'
+      const his = (baseUrl as Record<string, string>).LongTouHis || 'https://apphis.longhuvip.com/w1/api/index.php'
+      const { data } = await probeJson(label, `${his}?Index=0&PhoneOSNew=2&VerSion=5.13.0.7&a=ChangeStatistics&apiv=w35&c=HomeDingPan&st=1000`)
+      assertLongTouPayload(label, data, 'info')
+      assertNonEmptyArray(label, data, 'info')
     })
 
     it('GetHotPHB（个股人气）→ List', async () => {
@@ -139,17 +146,33 @@ describe('全量第三方接口可用性', () => {
       }
     })
 
-    it('DaBanList Type=18（竞价个股异动）→ list', async () => {
-      const label = '开盘啦/DaBanList(竞价异动)'
-      const { data } = await probeJson(
-        label,
-        longTouUrl(`Order=1&a=DaBanList&st=20&apiv=${LONG_TOU_APIV}&Type=18&c=HomeDingPan&PhoneOSNew=1&Index=0&Is_st=1&PidType=8&`)
-      )
-      assertLongTouPayload(label, data, 'list')
-      expect(Array.isArray(pickField(data, 'list'))).toBe(true)
+    it('MorningBiddingList（竞价个股异动）→ info', async () => {
+      const label = '开盘啦/MorningBiddingList(竞价异动)'
+      const hq = (baseUrl as Record<string, string>).LongTouHq || 'https://apphwhq.longhuvip.com/w1/api/index.php'
+      const body = new URLSearchParams({
+        Order: '1',
+        st: '20',
+        a: 'MorningBiddingList',
+        c: 'HomeDingPan',
+        PhoneOSNew: '1',
+        VerSion: '5.19.0.0',
+        Token: envToken('LONG_TOU_TOKEN') || '0',
+        Index: '0',
+        PidType: '0',
+        apiv: 'w40',
+        Type: '4',
+        UserID: envToken('LONG_TOU_USERID') || '0',
+      })
+      const { data } = await probeJson(label, hq, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8' },
+        body: body.toString(),
+      })
+      assertLongTouPayload(label, data, 'info')
+      expect(Array.isArray(pickField(data, 'info'))).toBe(true)
     })
 
-    it('DaBanList Type=6（今日涨停）→ list', async () => {
+    it.skip('DaBanList Type=6（今日涨停，已失效）→ list', async () => {
       const label = '开盘啦/DaBanList(今日涨停)'
       const { data } = await probeJson(
         label,

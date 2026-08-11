@@ -3,10 +3,10 @@ import { CronJob } from 'cron'
 import { timer } from '@awamstock/shared'
 import { JobOptions, getCommonJob } from './util'
 import { 大盘, 个股人气, 板块人气, 板块人气个股, 涨停信息, 全球市场, 短线精灵, 板块涨跌 } from '../worker/data/long-tou/worker'
-import { 市场消息, 大盘异动, 跌停池, 炸板池, 强势股池 } from '../worker/data/baoer'
 import { 涨停池 } from '../worker/data/ths-limit-up'
 
-export const workers_baoer行情 = [new 市场消息(), new 大盘异动(), new 涨停池(), new 跌停池(), new 炸板池(), new 强势股池()]
+/** 涨停池改用同花顺；选股宝股票池已关闭 */
+export const workers_涨停池 = [new 涨停池()]
 export const workers_即时行情 = [
   new 大盘(),
   new 个股人气(),
@@ -16,7 +16,7 @@ export const workers_即时行情 = [
   new 全球市场(),
   // new 短线精灵(),
   new 板块涨跌(),
-  ...workers_baoer行情,
+  ...workers_涨停池,
 ]
 
 export async function 即时行情() {

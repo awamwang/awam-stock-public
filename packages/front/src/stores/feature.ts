@@ -12,7 +12,7 @@ export interface IFeatureStore {
 export const useFeatureStore = defineStore('feature', {
   state: (): IFeatureStore => ({
     baoer: {
-      enable: true,
+      enable: false,
     },
   }),
   getters: {},

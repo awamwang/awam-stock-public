@@ -18,7 +18,6 @@ import {
   radarMap,
   IBeforeOpenStock,
   BeforeOpenStock,
-  beforeOpenStockMap,
   IMoodBlockItem,
   MoodBlockItem,
   moodBlockItemMap,
@@ -29,20 +28,18 @@ import {
   MoodBlockStock,
   moodBlockStockMap,
 } from '@awamstock/model'
-import { API_V, USER_ID, TOKEN } from './util'
+import { API_V, API_V_HQ, USER_ID, TOKEN, LongTouHqUrl, LongTouHisUrl, longTouPost, zhiShuStockListUrl } from './util'
 import { DataWorker } from '../../worker'
 import { myFetch, baseUrl } from '../../../lib/api-fetch/index'
-import { getBaoerEnvironment } from './../baoer'
 import { getTimeNorthBuy, getTodayNorthFund, getMainFund } from './../eastmoney'
+import { fetchLimitUpPool, mapThsItemToStockPool } from './../ths-limit-up'
 // import { handleWorkerError } from '../exception'
 
 // Day=2022-05-30&
 
 async function getBlock(params: { code: string; limit?: number }): Promise<IBlock> {
   const { limit = 300 } = params
-  const res = await myFetch(
-    `${baseUrl.LongTou}?Order=1&st=${limit}&a=ZhiShuStockList_W8&c=ZhiShuRanking&PhoneOSNew=1&old=1&Token=${TOKEN}&Index=0&apiv=w25&Type=6&UserID=${USER_ID}&PlateID=${params.code}&`
-  )
+  const res = await myFetch(zhiShuStockListUrl({ code: params.code, limit }))
 
   return {
     code: params.code,
@@ -56,9 +53,7 @@ async function getBlock(params: { code: string; limit?: number }): Promise<IBloc
 
 async function getBlockStocks(params: { code: string; limit?: number }): Promise<IMoodBlockStock[]> {
   const { limit = 10 } = params
-  const res = await myFetch(
-    `${baseUrl.LongTou}?Order=1&st=${limit}&a=ZhiShuStockList_W8&c=ZhiShuRanking&PhoneOSNew=1&old=1&Token=${TOKEN}&Index=0&apiv=w25&Type=6&UserID=${USER_ID}&PlateID=${params.code}&`
-  )
+  const res = await myFetch(zhiShuStockListUrl({ code: params.code, limit }))
 
   return ensureArray(res.list).map(
     (item: any) =>
@@ -117,9 +112,8 @@ export class 大盘 extends DataWorker<IEnvironment> {
   protected model = Environment
 
   async get() {
-    const [res, baoer, net_north, north, main] = await Promise.all([
+    const [res, net_north, north, main] = await Promise.all([
       myFetch(`${baseUrl.LongTou}?a=ZhangFuDetail&apiv=${API_V}&c=HomeDingPan&PhoneOSNew=1&`),
-      getBaoerEnvironment(),
       getTimeNorthBuy(),
       getTodayNorthFund(),
       getMainFund(),
@@ -128,7 +122,6 @@ export class 大盘 extends DataWorker<IEnvironment> {
     return {
       date: timer.today(),
       ...mapObj(res.info, environmentMap, { saveExtra: false }),
-      ...baoer,
       ...net_north,
       ...north,
       ...main,
@@ -310,12 +303,11 @@ export async function 大盘直播() {
   })
 }
 
-// 今日涨停
-// {{LongTouurl}}?st=1000&a=DaBanList&apiv=${API_V}&Is_st=1&Type=6&Index=0&PidType=1&c=HomeDingPan&Order=1&PhoneOSNew=1&
-export async function 今日涨停() {
-  return await myFetch(`${baseUrl.LongTou}?st=1000&a=DaBanList&apiv=${API_V}&Is_st=1&Type=6&Index=0&PidType=1&c=HomeDingPan&Order=1&PhoneOSNew=1&`).then((data) => {
-    throw new Error('未完成')
-  })
+// 今日涨停（同花顺 limit_up_pool；开盘啦 DaBanList 已失效）
+export async function 今日涨停(params: Record<string, any> = {}) {
+  const date = (params.date as string) || timer.today()
+  const res = await fetchLimitUpPool({ date, limit: Number(params.limit) || 200 })
+  return ensureArray(res.data?.info).map((item) => mapThsItemToStockPool(item, date))
 }
 
 // 个股L2
@@ -334,7 +326,7 @@ export async function 席位龙虎榜() {
   })
 }
 
-// 涨停信息
+// 涨停信息（ZhangTingExpression + ChangeStatistics 情绪增强）
 // {{LongTouurl}}?a=ZhangTingExpression&apiv=${API_V}&c=HomeDingPan&PhoneOSNew=1&
 export class 涨停信息 extends DataWorker {
   protected needArchive = true
@@ -345,26 +337,56 @@ export class 涨停信息 extends DataWorker {
   }
 
   async get() {
-    const data: any = await myFetch(`${baseUrl.LongTou}?a=ZhangTingExpression&apiv=${API_V}&c=HomeDingPan&PhoneOSNew=1&`)
-    const info = Array.isArray(data?.info) ? data.info : null
+    const [expressionRes, changeRes] = await Promise.all([
+      myFetch(`${baseUrl.LongTou}?a=ZhangTingExpression&apiv=${API_V}&c=HomeDingPan&PhoneOSNew=1&`).catch((err) => {
+        console.warn('[worker] 涨停信息：ZhangTingExpression 请求失败', err)
+        return null
+      }),
+      myFetch(`${LongTouHisUrl}?Index=0&PhoneOSNew=2&VerSion=5.13.0.7&a=ChangeStatistics&apiv=w35&c=HomeDingPan&st=1000`).catch((err) => {
+        console.warn('[worker] 涨停信息：ChangeStatistics 请求失败', err)
+        return null
+      }),
+    ])
+
+    const info = Array.isArray(expressionRes?.info) ? expressionRes.info : null
     // 非交易时段接口可能返回 ["kaipanla.com", ...] 占位 list，避免写入无效数据
-    if (!info || info.length < 12 || typeof info[0] !== 'number') {
+    const validInfo = info && info.length >= 12 && typeof info[0] === 'number' ? info : null
+    if (!validInfo) {
       console.warn('[worker] 涨停信息：当前无有效 info（可能非交易时段）', {
-        errcode: data?.errcode,
-        keys: data ? Object.keys(data) : [],
+        errcode: expressionRes?.errcode,
+        keys: expressionRes ? Object.keys(expressionRes) : [],
       })
+    }
+
+    const today = timer.today()
+    const changeList = ensureArray(changeRes?.info)
+    const changeToday = changeList.find((item: any) => String(item?.Day || '') === today) || changeList[0]
+    const change =
+      changeToday != null
+        ? {
+            ztjs: Number(changeToday.ztjs) || 0,
+            df_num: Number(changeToday.df_num) || 0,
+            strong: Number(changeToday.strong) || 0,
+            lbgd: Number(changeToday.lbgd) || 0,
+            tip: typeof changeRes?.tip === 'string' ? changeRes.tip : '',
+            day: String(changeToday.Day || today),
+          }
+        : null
+
+    if (!validInfo && !change) {
       return null as any
     }
 
     return {
-      info,
-      date: timer.today(),
+      info: validInfo,
+      change,
+      date: today,
       createdAt: new Date(),
     }
   }
 }
 export function 涨停信息_parser(data: any) {
-  const [lb1, lb2, lb3, lbGd, jjl2, jjl3, jjlGd, 炸板率, 涨停溢价, 连板溢价, 昨日破板今表现, 操作建议] = data.info
+  const [lb1, lb2, lb3, lbGd, jjl2, jjl3, jjlGd, 炸板率, 涨停溢价, 连板溢价, 昨日破板今表现, 操作建议] = data.info || []
 
   return {
     lb1,
@@ -379,21 +401,91 @@ export function 涨停信息_parser(data: any) {
     连板溢价,
     昨日破板今表现,
     操作建议,
+    change: data.change || null,
   }
 }
 
-// 竞价异动
-// {{LongTouurl}}?Order=1&a=DaBanList&st=200&apiv=${API_V}&Type=18&c=HomeDingPan&PhoneOSNew=1&Index=0&Is_st=1&PidType=8&
+function parseBiddingLb(label: unknown): number {
+  const text = String(label || '')
+  const matched = text.match(/(\d+)\s*连板/)
+  if (matched) return Number(matched[1]) || 0
+  if (text.includes('首板')) return 1
+  return 0
+}
+
+function isValidStockCode(code: unknown): code is string {
+  return typeof code === 'string' && /^\d{6}$/.test(code) && !code.includes('kaipanla')
+}
+
+/** MorningBiddingList 行 → IBeforeOpenStock（字段下标见 longhuvip-morning-bidding.md） */
+function mapMorningBiddingRow(item: any[]): IBeforeOpenStock {
+  const blockNames = String(item[11] || '')
+  const gn = blockNames.split(/[、,，]/).map((s) => s.trim()).filter(Boolean)[0] || ''
+  const lbTarget = String(item[16] || '')
+
+  return {
+    code: String(item[0]),
+    name: String(item[1] || ''),
+    type: 0,
+    money_type: '',
+    r_max: Number(item[3]) || 0,
+    zt_to_buy: 0,
+    m: Number(item[4]) || 0,
+    lb_target: lbTarget,
+    lb: parseBiddingLb(lbTarget),
+    block_names: blockNames,
+    lt: Number(item[12]) || 0,
+    gn,
+    r: Number(item[5]) || 0,
+    m_net: Number(item[6]) || 0,
+    hs: Number(item[7]) || 0,
+  } as IBeforeOpenStock
+}
+
+// 竞价异动（MorningBiddingList 替代已失效的 DaBanList Type=18）
 export class 竞价个股异动 extends DataWorker<IBeforeOpenStock> {
   protected model = BeforeOpenStock
 
-  async get() {
-    const res: any = await myFetch(`${baseUrl.LongTou}?Order=1&a=DaBanList&st=200&apiv=${API_V}&Type=18&c=HomeDingPan&PhoneOSNew=1&Index=0&Is_st=1&PidType=8&`)
+  protected async afterWork() {
+    // 空列表时不推送，避免覆盖前端已有竞价数据
+    if (!this.data) return
+    return super.afterWork()
+  }
 
-    return ensureArray(res.list).map(
+  async get() {
+    const res: any = await longTouPost(LongTouHqUrl, {
+      Order: 1,
+      st: 200,
+      a: 'MorningBiddingList',
+      c: 'HomeDingPan',
+      PhoneOSNew: 1,
+      VerSion: '5.19.0.0',
+      Token: TOKEN || '0',
+      Index: 0,
+      PidType: 0,
+      apiv: API_V_HQ,
+      Type: 4,
+      UserID: USER_ID || '0',
+    })
+
+    const errcode = res?.errcode != null ? String(res.errcode) : ''
+    const status = Number(res?.status)
+    const rows = ensureArray(res?.info).filter((item: any) => Array.isArray(item) && isValidStockCode(item[0]))
+
+    // 空列表 / status!=1 时勿覆盖库内已有竞价数据
+    if (errcode !== '0' || status !== 1 || rows.length === 0) {
+      console.warn('[worker] 竞价个股异动：无有效列表，跳过写入', {
+        errcode: res?.errcode,
+        status: res?.status,
+        count: rows.length,
+      })
+      return null as any
+    }
+
+    return rows.map(
       (item: any) =>
         ({
-          ...mapObj(item, beforeOpenStockMap, { saveExtra: false }),
+          ...mapMorningBiddingRow(item),
           date: timer.today(),
           createdAt: new Date(),
         } as IBeforeOpenStock)
