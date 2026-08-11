@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process'
-import { mkdirSync } from 'node:fs'
+import { existsSync, mkdirSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -13,6 +13,9 @@ const ECOSYSTEM_FILES = [
   'packages/db/ecosystem.config.js',
   'packages/server/ecosystem.config.js',
 ]
+
+/** 生产 PM2 入口产物；构建成功但增量缓存空 emit 时在此拦截 */
+const REQUIRED_ARTIFACTS = ['packages/db/dist/index.js', 'packages/server/dist/main.js']
 
 const LOG_PATH_KEYS = ['out_file', 'err_file', 'error_file', 'log_file']
 
@@ -71,6 +74,13 @@ async function main() {
   if (!skipBuild) {
     // 生产启动不打包前端
     await run('build', ['-r', '--filter', '!@awamstock/front', '--if-present', 'build'])
+    for (const rel of REQUIRED_ARTIFACTS) {
+      const abs = join(root, rel)
+      if (!existsSync(abs)) {
+        throw new Error(`[build] 缺少产物: ${rel}（请检查对应包 tsconfig 增量缓存是否导致空 emit）`)
+      }
+      console.log(`[build] 已确认产物: ${rel}`)
+    }
   } else {
     console.log('\n[build] 已跳过 (--skip-build)')
   }

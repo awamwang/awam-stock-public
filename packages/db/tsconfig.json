@@ -5,6 +5,7 @@
     "baseUrl": ".",
     "rootDir": "src",
     "outDir": "dist",
-    "paths": {}
+    "paths": {},
+    "tsBuildInfoFile": "./dist/.tsbuildinfo"
   }
 }

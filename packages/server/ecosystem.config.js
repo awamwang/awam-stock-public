@@ -20,7 +20,10 @@ module.exports = {
       script: 'dist/main.js',
       max_restarts: 5,
       watch: false,
-      env: {},
+      env: {
+        AWST_ENV: 'tx',
+        NODE_ENV: 'production',
+      },
       out_file: '/var/log/stock-server/out.log',
       err_file: '/var/log/stock-server/err.log',
       log_date_format: 'YYYY-MM-DD HH:mm Z',

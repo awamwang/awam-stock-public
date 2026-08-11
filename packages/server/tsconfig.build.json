@@ -3,8 +3,7 @@
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "test", "dist", "**/*spec.ts"],
   "compilerOptions": {
-    // "outDir": "./dist"
-    // "noEmit": false,
-    // "noEmitOnError": true
+    // 放进 outDir，避免 nest deleteOutDir 后增量缓存误判跳过 emit
+    "tsBuildInfoFile": "./dist/.tsbuildinfo"
   }
 }
