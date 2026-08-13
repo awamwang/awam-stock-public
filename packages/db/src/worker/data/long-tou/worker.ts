@@ -31,6 +31,7 @@ import {
 import { API_V, API_V_HQ, USER_ID, TOKEN, LongTouHqUrl, LongTouHisUrl, longTouPost, zhiShuStockListUrl } from './util'
 import { DataWorker } from '../../worker'
 import { myFetch, baseUrl } from '../../../lib/api-fetch/index'
+import { getBaoerEnvironment } from './../baoer'
 import { getTimeNorthBuy, getTodayNorthFund, getMainFund } from './../eastmoney'
 import { fetchLimitUpPool, mapThsItemToStockPool } from './../ths-limit-up'
 // import { handleWorkerError } from '../exception'
@@ -112,8 +113,9 @@ export class 大盘 extends DataWorker<IEnvironment> {
   protected model = Environment
 
   async get() {
-    const [res, net_north, north, main] = await Promise.all([
+    const [res, baoer, net_north, north, main] = await Promise.all([
       myFetch(`${baseUrl.LongTou}?a=ZhangFuDetail&apiv=${API_V}&c=HomeDingPan&PhoneOSNew=1&`),
+      getBaoerEnvironment(),
       getTimeNorthBuy(),
       getTodayNorthFund(),
       getMainFund(),
@@ -122,6 +124,7 @@ export class 大盘 extends DataWorker<IEnvironment> {
     return {
       date: timer.today(),
       ...mapObj(res.info, environmentMap, { saveExtra: false }),
+      ...baoer,
       ...net_north,
       ...north,
       ...main,
