@@ -1,0 +1,29 @@
+{
+  "name": "Awam-Stock",
+  "install": "bash .cursor/install.sh",
+  "start": "bash .cursor/start.sh",
+  "terminals": [
+    {
+      "name": "akshare",
+      "command": "cd packages/akshare && python main.py --host 0.0.0.0 --port 8988",
+      "description": "AkTools/AKShare 本地数据服务 (http://127.0.0.1:8988)"
+    },
+    {
+      "name": "db-server",
+      "command": "pnpm dev:db-server",
+      "description": "db 数据抓取/定时任务 + NestJS 服务端 (API 与 websocket, http://127.0.0.1:7001)"
+    },
+    {
+      "name": "front",
+      "command": "cd packages/front && pnpm run dev:vue",
+      "description": "前端 Vue Web 开发服务 (Vite, http://localhost:3000)"
+    }
+  ],
+  "ports": [
+    { "name": "front", "port": 3000 },
+    { "name": "front-socket", "port": 3001 },
+    { "name": "front-http", "port": 3002 },
+    { "name": "server", "port": 7001 },
+    { "name": "akshare", "port": 8988 }
+  ]
+}
