@@ -25,6 +25,8 @@ coverage
 cypress/videos/
 cypress/screenshots/
 __pycache__/
+.venv/
+**/\.venv/
 
 .env
 **/envs/*.env
