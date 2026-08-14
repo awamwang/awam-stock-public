@@ -29,5 +29,6 @@ __pycache__/
 .env
 **/envs/*.env
 *.local
+.tmp/
 
 packages/*/src/**/*.map
