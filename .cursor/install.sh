@@ -31,8 +31,10 @@ ensure_system_deps() {
 
 # 安装 Node 依赖并构建 TS 子包（前端不在此构建）
 install_node() {
+  # 仓库锁文件与 pnpm 9.15.9 的 patchedDependencies 记录存在既有差异，
+  # 使用 --no-frozen-lockfile 以在不升级依赖版本的前提下完成安装
   log "pnpm install"
-  pnpm install --frozen-lockfile
+  pnpm install --no-frozen-lockfile
   log "构建 shared/model/db/server"
   pnpm build
 }
