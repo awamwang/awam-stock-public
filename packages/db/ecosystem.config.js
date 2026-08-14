@@ -22,7 +22,10 @@ module.exports = {
       max_restarts: 3,
       watch: ['./dist'],
       ignore_watch: ['dist/data'],
-      env: {},
+      env: {
+        AWST_ENV: 'tx',
+        NODE_ENV: 'production',
+      },
       out_file: '/var/log/stock-db/out.log',
       err_file: '/var/log/stock-db/err.log',
       log_date_format: 'YYYY-MM-DD HH:mm Z',
